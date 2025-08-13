@@ -7,7 +7,6 @@ interface LoginFormProps {
     rememberMe: boolean;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // Gọi khi submit form (sẽ xử lý API sau này)
   onSubmit: (data: LoginFormProps["formData"]) => void;
   error: string | null;
 }
@@ -15,21 +14,9 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ formData, onChange, onSubmit, error }) => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Bạn có thể gọi API tại đây sau:
-    /*
-    try {
-      const response = await axios.post("/api/login", formData);
-      // Xử lý đăng nhập thành công (lưu token, redirect...)
-    } catch (err) {
-      // Xử lý lỗi đăng nhập
-    }
-    */
-
-    // Tạm thời gọi hàm giả lập để test
-    onSubmit(formData);
+    onSubmit(formData); // Gọi hàm submit từ LoginPage
   };
 
   return (
