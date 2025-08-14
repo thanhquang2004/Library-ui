@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage"; 
 import AccountPage from "./pages/AccountPage"; // Thêm dòng này
+import BookListPage from "./pages/BookListPage";
 
 function App() {
   return (
@@ -29,6 +30,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <AccountPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Route mới cho trang danh sách sách */}
+          <Route
+            path="/books"
+            element={
+              <ProtectedRoute>
+                <BookListPage />
               </ProtectedRoute>
             }
           />
