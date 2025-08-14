@@ -74,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isLoading, isOpen = false, onCl
             <ul className="space-y-1">
               <NavItem icon={<FaHome />} label="Home" onClick={() => navigate("/")} />
               <NavItem icon={<FaSearch />} label="Search" />
-              <NavItem icon={<FaBook />} label="Books" />
+              <NavItem icon={<FaBook />} label="Books" onClick={() => navigate("/books")} />
               <NavItem icon={<FaTasks />} label="Checklist" />
               <NavItem icon={<FaChartBar />} label="Statistical" />
               <NavItem icon={<FaFileAlt />} label="Document" />
