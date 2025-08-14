@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Skeleton_ui from './Skeleton';
 import axios from 'axios';
 import { useAuth } from "../context/AuthContext";
-
+const API_BASE = import.meta.env.VITE_API_BASE;
 interface UserData {
   userId: string;
   name: string;
@@ -56,7 +56,7 @@ const AccountForm = ({ userData, isLoading }: AccountFormProps) => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/users/${user.id}`, // dùng id từ AuthContext
+        `${API_BASE}/users/${user.id}`, // dùng id từ AuthContext
         formData,
         {
           headers: {

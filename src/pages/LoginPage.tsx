@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (data: typeof formData) => {
     setError(null);
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post(`${API_BASE}/auth/login`, {
         email: data.email,
         password: data.password,
       });

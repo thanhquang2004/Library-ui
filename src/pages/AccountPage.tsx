@@ -15,7 +15,7 @@ interface UserData {
   preferences: string;
   language: string;
 }
-
+const API_BASE = import.meta.env.VITE_API_BASE;
 const AccountPage = () => {
   const { user, token } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -27,7 +27,7 @@ const AccountPage = () => {
     const fetchUserData = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get(`http://localhost:5000/api/users/${user.id}`, {
+        const res = await axios.get(`${API_BASE}/users/${user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
