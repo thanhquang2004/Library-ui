@@ -78,6 +78,14 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isLoading, isOpen = false, onCl
               <NavItem icon={<FaTasks />} label="Checklist" />
               <NavItem icon={<FaChartBar />} label="Statistical" />
               <NavItem icon={<FaFileAlt />} label="Document" />
+              {/* Chỉ admin hoặc librarian mới thấy nút này */}
+              {user && (user.role === "admin" || user.role === "librarian") && (
+                <NavItem
+                  icon={<FaFileAlt />} // Có thể đổi icon khác như FaUserPlus
+                  label="Add Member"
+                  onClick={() => navigate("/register")}
+                />
+              )}
             </ul>
           </div>
 

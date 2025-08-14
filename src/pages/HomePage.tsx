@@ -11,7 +11,7 @@ const HomePage: React.FC = () => {
     <div className="flex h-screen bg-gray-50 font-sans relative">
       {/* Sidebar */}
       <Sidebar
-        user={user ? { name: user.username, role: "member" } : null}
+        user={user ? { name: user.username, role: user.role || "unknown", } : null}
         isLoading={false}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}

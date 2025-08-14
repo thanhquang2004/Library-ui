@@ -20,6 +20,7 @@ const AccountPage = () => {
   const { user, token } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!user || !token) return;
@@ -48,6 +49,8 @@ const AccountPage = () => {
       <Sidebar 
         user={userData ? { name: userData.name, role: userData.role } : null} 
         isLoading={isLoading} 
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
       />
       <MainContent 
         userData={userData} 
