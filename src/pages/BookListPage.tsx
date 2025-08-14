@@ -12,22 +12,30 @@ export default function BookListPage() {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get<Book[]>(`${API_BASE}/books/`);
-        setBooks(res.data);
-      } catch (err: unknown) {
-        if (axios.isAxiosError(err)) {
-          console.error(err);
-          setError("Không thể tải dữ liệu sách");
-        } else {
-          console.error(err);
-          setError("Đã xảy ra lỗi không xác định");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  try {
+    setLoading(true);
+
+    const token = localStorage.getItem("token"); // Lấy token sau khi login
+
+    const res = await axios.get<Book[]>(`${API_BASE}/books/search`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setBooks(res.data);
+  } catch (err: unknown) {
+    if (axios.isAxiosError(err)) {
+      console.error(err);
+      setError(err.response?.data?.error || "Không thể tải dữ liệu sách");
+    } else {
+      console.error(err);
+      setError("Đã xảy ra lỗi không xác định");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchBooks();
   }, []);
@@ -76,9 +84,9 @@ export default function BookListPage() {
                 : "flex flex-col gap-4"
             }
           >
-            {books.map((book) => (
+            {books.map((book, idx) => (
               <div
-                key={book.bookId}
+                key={idx}
                 className="bg-white p-4 rounded-lg shadow flex flex-col"
               >
                 <img
