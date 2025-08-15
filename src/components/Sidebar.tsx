@@ -1,129 +1,156 @@
-import React from 'react';
-import {
-  FaHome, FaSearch, FaBook, FaTasks, FaChartBar, FaFileAlt,
-  FaCog, FaQuestionCircle, FaSignOutAlt
-} from 'react-icons/fa';
-import Skeleton_ui from './Skeleton.tsx';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { FaHome, FaBook, FaChartBar, FaQuestionCircle, FaUserCircle, FaUserPlus, FaBars } from "react-icons/fa";
+import Skeleton_ui from "./Skeleton.tsx";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   user: { name: string; role: string } | null;
   isLoading: boolean;
-  isOpen?: boolean;      // để kiểm soát mở/đóng trên mobile
-  onClose?: () => void;  // để đóng Sidebar khi click overlay
+  children: React.ReactNode;
 }
 
 interface NavItemProps {
   icon: React.ReactNode;
   label: string;
-  active?: boolean;
   onClick?: () => void;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, active = false, onClick }) => {
-  return (
-    <li>
-      <button
-        onClick={onClick}
-        className={`flex items-center w-full text-left py-2.5 px-4 rounded-lg font-medium transition-colors ${
-          active ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-        }`}
-      >
-        <span className="w-6 text-center">{icon}</span>
-        <span className="ml-3">{label}</span>
-      </button>
-    </li>
-  );
-};
+const NavItem: React.FC<NavItemProps> = ({ icon, label, onClick }) => (
+  <li>
+    <button
+      onClick={onClick}
+      className="flex items-center w-full text-left py-2.5 px-4 rounded-lg font-medium transition-colors text-gray-600 hover:bg-gray-100"
+    >
+      <span className="w-6 text-center">{icon}</span>
+      <span className="ml-3">{label}</span>
+    </button>
+  </li>
+);
 
-const Sidebar: React.FC<SidebarProps> = ({ user, isLoading, isOpen = false, onClose }) => {
-  const { logout } = useAuth();
+const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) => {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Ẩn mặc định
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
-  const handleSignOut = () => {
-    logout();
-    navigate("/login");
-  };
+  const sidebarWidth = 256;
+
+  // Detect screen resize
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+
+      // Khi đang desktop mở mà resize xuống mobile => tự đóng sidebar
+      if (mobile && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [sidebarOpen]);
 
   return (
-    <>
-      {/* Overlay cho mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
-          onClick={onClose}
-        ></div>
+    <div className="flex h-screen relative">
+      {/* Sidebar */}
+      <div
+        className={`bg-white border-r border-gray-200 flex-shrink-0 flex flex-col transition-transform duration-300
+          ${isMobile ? "fixed z-50 top-0 left-0 h-full" : "relative h-full"}`}
+        style={{
+          width: sidebarWidth,
+          transform: sidebarOpen
+            ? "translateX(0)"
+            : isMobile
+            ? "translateX(-100%)"
+            : "translateX(-100%)",
+        }}
+      >
+        {sidebarOpen && (
+          <div className="flex flex-col h-full">
+            {/* Header: Logo + Toggle */}
+            <div className="flex items-center justify-between text-xl font-bold p-4 border-b border-gray-200">
+              <span>LOGO</span>
+              {!isMobile && (
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+                >
+                  <FaBars />
+                </button>
+              )}
+            </div>
+
+            {/* Nav */}
+            <nav className="flex-1 overflow-y-auto mt-4">
+              <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Menu chính
+              </p>
+              <ul className="space-y-1">
+                <NavItem icon={<FaHome />} label="Trang Chủ" onClick={() => navigate("/")} />
+                <NavItem icon={<FaBook />} label="Thư Viện" />
+                <NavItem icon={<FaChartBar />} label="Thống kê" />
+                {user && (user.role === "admin" || user.role === "librarian") && (
+                  <NavItem icon={<FaUserPlus />} label="Thêm thành viên" onClick={() => navigate("/register")} />
+                )}
+              </ul>
+
+              <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 mt-6">
+                Liên hệ hỗ trợ
+              </p>
+              <ul className="space-y-1">
+                <NavItem icon={<FaQuestionCircle />} label="Trợ giúp" />
+              </ul>
+            </nav>
+
+            {/* User */}
+            <div className="flex-shrink-0 w-full mt-auto">
+              <div
+                onClick={() => navigate("/account")}
+                className="flex items-center w-full cursor-pointer hover:bg-blue-50 transition-colors p-3 rounded-lg border-t border-gray-200"
+              >
+                <FaUserCircle className="w-12 h-12 text-gray-400 flex-shrink-0" />
+                <div className="ml-3 overflow-hidden">
+                  {isLoading ? (
+                    <div className="space-y-2">
+                      <Skeleton_ui className="h-4 w-24" />
+                      <Skeleton_ui className="h-3 w-16" />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-sm truncate" title={user?.name}>{user?.name}</p>
+                      <p className="text-xs text-gray-500 truncate" title={user?.role}>{user?.role}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Overlay mobile */}
+      {isMobile && sidebarOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <aside
-        className={`bg-white border-r border-gray-200 flex flex-col p-4 shrink-0 z-50
-        transform transition-transform duration-300
-        fixed md:static top-0 left-0 h-full w-64
-        ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
+      {/* Fixed toggle button khi sidebar đóng */}
+      {!sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md"
+        >
+          <FaBars />
+        </button>
+      )}
+
+      {/* Main content */}
+      <main
+        className="flex-1 transition-all duration-300"
+        
       >
-        {/* Logo */}
-        <div className="text-2xl font-bold text-center py-4 mb-4">LOGO</div>
-
-        <nav className="flex-grow">
-          {/* Main Menu */}
-          <div className="mb-6">
-            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Main Menu
-            </p>
-            <ul className="space-y-1">
-              <NavItem icon={<FaHome />} label="Home" onClick={() => navigate("/")} />
-              <NavItem icon={<FaSearch />} label="Search" />
-              <NavItem icon={<FaBook />} label="Books" />
-              <NavItem icon={<FaTasks />} label="Checklist" />
-              <NavItem icon={<FaChartBar />} label="Statistical" />
-              <NavItem icon={<FaFileAlt />} label="Document" />
-            </ul>
-          </div>
-
-          {/* Support Menu */}
-          <div>
-            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Support
-            </p>
-            <ul className="space-y-1">
-              <NavItem icon={<FaCog />} label="Setting" />
-              <NavItem icon={<FaQuestionCircle />} label="Help" />
-              <NavItem icon={<FaSignOutAlt />} label="Sign Out" onClick={handleSignOut} />
-            </ul>
-          </div>
-        </nav>
-
-        {/* User Profile Section */}
-        <div className="mt-auto">
-          <div
-  onClick={() => navigate("/account")}
-  className="flex items-center p-2 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
->
-  <div className="w-10 h-10 rounded-full bg-gray-300 flex-shrink-0" />
-  <div className="ml-3 overflow-hidden">
-    {isLoading ? (
-      <div className="space-y-2">
-        <Skeleton_ui className="h-4 w-24" />
-        <Skeleton_ui className="h-3 w-16" />
-      </div>
-    ) : (
-      <>
-        <p className="font-semibold text-sm truncate" title={user?.name}>
-          {user?.name}
-        </p>
-        <p className="text-xs text-gray-500 truncate" title={user?.role}>
-          {user?.role}
-        </p>
-      </>
-    )}
-  </div>
-</div>
-
-        </div>
-      </aside>
-    </>
+        {children}
+      </main>
+    </div>
   );
 };
 
-export default Sidebar;
+export default SidebarLayout;

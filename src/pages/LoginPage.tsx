@@ -45,6 +45,7 @@ const LoginPage: React.FC = () => {
         id: result.data.userId,
         email: result.data.email,
         username: result.data.name,
+        role: result.data.role , 
       });
 
       // Chuyển hướng về trang Home
