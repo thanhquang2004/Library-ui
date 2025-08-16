@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { FaHome, FaBook, FaChartBar, FaQuestionCircle, FaUserCircle, FaUserPlus, FaBars } from "react-icons/fa";
+import {
+  FaHome,
+  FaBook,
+  FaChartBar,
+  FaQuestionCircle,
+  FaUserCircle,
+  FaUserPlus,
+  FaBars,
+} from "react-icons/fa";
 import Skeleton_ui from "./Skeleton.tsx";
 import { useNavigate } from "react-router-dom";
 
@@ -29,7 +37,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, onClick }) => (
 
 const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Ẩn mặc định
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   const sidebarWidth = 256;
@@ -40,7 +48,6 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
 
-      // Khi đang desktop mở mà resize xuống mobile => tự đóng sidebar
       if (mobile && sidebarOpen) {
         setSidebarOpen(false);
       }
@@ -86,10 +93,25 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
               </p>
               <ul className="space-y-1">
                 <NavItem icon={<FaHome />} label="Trang Chủ" onClick={() => navigate("/")} />
-                <NavItem icon={<FaBook />} label="Thư Viện" />
-                <NavItem icon={<FaChartBar />} label="Thống kê" />
+                <NavItem icon={<FaBook />} label="Thư Viện" onClick={() => navigate("/library")} />
+                <NavItem icon={<FaChartBar />} label="Thống kê" onClick={() => navigate("/stats")} />
+
+                {/* 👇 Chỉ librarian mới thấy Dashboard */}
+                {user && user.role === "librarian" && (
+                  <NavItem
+                    icon={<FaChartBar />}
+                    label="Dashboard"
+                    onClick={() => navigate("/librarian")}
+                  />
+                )}
+
+                {/* Admin + Librarian mới thấy Thêm thành viên */}
                 {user && (user.role === "admin" || user.role === "librarian") && (
-                  <NavItem icon={<FaUserPlus />} label="Thêm thành viên" onClick={() => navigate("/register")} />
+                  <NavItem
+                    icon={<FaUserPlus />}
+                    label="Thêm thành viên"
+                    onClick={() => navigate("/register")}
+                  />
                 )}
               </ul>
 
@@ -116,8 +138,12 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
                     </div>
                   ) : (
                     <>
-                      <p className="font-semibold text-sm truncate" title={user?.name}>{user?.name}</p>
-                      <p className="text-xs text-gray-500 truncate" title={user?.role}>{user?.role}</p>
+                      <p className="font-semibold text-sm truncate" title={user?.name}>
+                        {user?.name}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate" title={user?.role}>
+                        {user?.role}
+                      </p>
                     </>
                   )}
                 </div>
@@ -129,7 +155,10 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
 
       {/* Overlay mobile */}
       {isMobile && sidebarOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
       {/* Fixed toggle button khi sidebar đóng */}
@@ -143,12 +172,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
       )}
 
       {/* Main content */}
-      <main
-        className="flex-1 transition-all duration-300"
-        
-      >
-        {children}
-      </main>
+      <main className="flex-1 transition-all duration-300">{children}</main>
     </div>
   );
 };
