@@ -79,6 +79,22 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
               )}
             </div>
 
+
+        <nav className="flex-grow">
+          {/* Main Menu */}
+          <div className="mb-6">
+            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+              Main Menu
+            </p>
+            <ul className="space-y-1">
+              <NavItem icon={<FaHome />} label="Home" onClick={() => navigate("/")} />
+              <NavItem icon={<FaSearch />} label="Search" />
+              <NavItem icon={<FaBook />} label="Books" onClick={() => navigate("/books")} />
+              <NavItem icon={<FaTasks />} label="Checklist" />
+              <NavItem icon={<FaChartBar />} label="Statistical" />
+              <NavItem icon={<FaFileAlt />} label="Document" />
+            </ul>
+          </div>
             {/* Nav */}
             <nav className="flex-1 overflow-y-auto mt-4">
               <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
@@ -92,6 +108,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
                   <NavItem icon={<FaUserPlus />} label="Thêm thành viên" onClick={() => navigate("/register")} />
                 )}
               </ul>
+
 
               <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 mt-6">
                 Liên hệ hỗ trợ
