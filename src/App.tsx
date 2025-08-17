@@ -6,15 +6,18 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage"; 
 import AccountPage from "./pages/AccountPage"; // Thêm dòng này
 import BookListPage from "./pages/BookListPage";
+import AccountPage from "./pages/AccountPage";
+
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
+          {/* Public */}
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          
+
+          {/* Yêu cầu đăng nhập */}
           <Route
             path="/"
             element={
@@ -24,7 +27,6 @@ function App() {
             }
           />
 
-          {/* Thêm route cho trang account */}
           <Route
             path="/account"
             element={
@@ -40,6 +42,13 @@ function App() {
             element={
               <ProtectedRoute>
                 <BookListPage />
+          {/* Chỉ admin hoặc librarian mới vào được */}
+          <Route
+            path="/register"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <RegisterPage />
+
               </ProtectedRoute>
             }
           />

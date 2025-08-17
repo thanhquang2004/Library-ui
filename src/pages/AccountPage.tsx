@@ -1,8 +1,8 @@
 // src/pages/AccountPage.tsx
 import { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import MainContent from '../components/Maincontent';
 import { useAuth } from "../context/AuthContext";
+import SidebarLayout from '../components/Sidebar';
+import MainContent from '../components/Maincontent';
 import axios from 'axios';
 
 interface UserData {
@@ -15,7 +15,9 @@ interface UserData {
   preferences: string;
   language: string;
 }
+
 const API_BASE = import.meta.env.VITE_API_BASE;
+
 const AccountPage = () => {
   const { user, token } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -44,16 +46,15 @@ const AccountPage = () => {
   }, [user, token]);
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans">
-      <Sidebar 
-        user={userData ? { name: userData.name, role: userData.role } : null} 
-        isLoading={isLoading} 
-      />
+    <SidebarLayout
+      user={userData ? { name: userData.name, role: userData.role } : null}
+      isLoading={isLoading}
+    >
       <MainContent 
         userData={userData} 
         isLoading={isLoading} 
       />
-    </div>
+    </SidebarLayout>
   );
 };
 
