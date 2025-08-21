@@ -88,6 +88,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
                 <NavItem icon={<FaHome />} label="Trang Chủ" onClick={() => navigate("/")} />
                 <NavItem icon={<FaBook />} label="Thư Viện" />
                 <NavItem icon={<FaChartBar />} label="Thống kê" />
+                <NavItem icon={<FaBook />} label="Book List" onClick={() => navigate("/books")} />
                 {user && (user.role === "admin" || user.role === "librarian") && (
                   <NavItem icon={<FaUserPlus />} label="Thêm thành viên" onClick={() => navigate("/register")} />
                 )}

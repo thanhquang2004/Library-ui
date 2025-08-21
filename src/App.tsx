@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage"; 
 import AccountPage from "./pages/AccountPage";
+import BookListPage from "./pages/BookListPage"; 
 
 function App() {
   return (
@@ -29,6 +30,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <AccountPage />
+              </ProtectedRoute>
+            }
+          />
+
+          
+          <Route
+            path="/books"
+            element={
+              <ProtectedRoute>
+                <BookListPage />
               </ProtectedRoute>
             }
           />
