@@ -46,7 +46,9 @@ const LoginPage: React.FC = () => {
         email: result.data.email,
         username: result.data.name,
         role: result.data.role , 
-      });
+      },
+      data.rememberMe
+    );
 
       // Chuyển hướng về trang Home
       navigate("/");
@@ -65,13 +67,13 @@ const LoginPage: React.FC = () => {
     <div className="h-screen w-screen bg-gradient-to-b from-[#00ACE8] to-[#B2EBF2] flex items-center justify-end px-4">
       <div className="w-3/5 flex flex-col items-center justify-center p-8">
         <img
-          src="/src/img/logo-login.png"
+          src="/logo-login.png"
           alt="Library"
           className="max-w-md w-full mb-6 rounded-lg"
         />
       </div>
       <div className="w-full md:w-2/5 max-w-lg bg-white rounded-xl shadow-lg p-8 max-h-[90vh] overflow-y-auto mr-36">
-        <h2 className="text-3xl font-bold text-center mb-6 text-[#00ACE8]">Login</h2>
+        <h2 className="text-3xl font-bold text-center mb-6 text-[#00ACE8]">Đăng Nhập</h2>
         <LoginForm
           formData={formData}
           onChange={handleChange}
