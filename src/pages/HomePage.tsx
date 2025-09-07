@@ -205,6 +205,8 @@ const HomePage: React.FC = () => {
         {user?.role === "librarian" && (
           <div className="mt-6">
             <DashboardPage />
+          </div>
+        )}
 
         {canViewChart && (
           <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
