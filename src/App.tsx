@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage"; 
 import AccountPage from "./pages/AccountPage";
 import BookListPage from "./pages/BookListPage"; 
+import DashboardPage from "./pages/DashboardPage";  // ✅ import đúng path
 
 function App() {
   return (
@@ -34,7 +35,6 @@ function App() {
             }
           />
 
-          
           <Route
             path="/books"
             element={
@@ -50,6 +50,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
                 <RegisterPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Dashboard của thủ thư */}
+          <Route
+            path="/librarian/*"
+            element={
+              <ProtectedRoute allowedRoles={["librarian"]}>
+                <DashboardPage />
               </ProtectedRoute>
             }
           />
