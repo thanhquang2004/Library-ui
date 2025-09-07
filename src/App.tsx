@@ -7,6 +7,8 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import AccountPage from "./pages/AccountPage";
 
+import DashboardPage from "./pages/DashboardPage";  // ✅ import đúng path
+
 import BookListPage from "./components/BookListPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -22,9 +24,6 @@ import RackManagementPage from "./pages/RackManagementPage.tsx";
 import BookItemManagementPage from "./pages/BookItemManagementPage.tsx";
 import CategoriesListPage from "./pages/CategoriesListPage.tsx";
 import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
-
-
-
 
 
 function App() {
@@ -140,6 +139,18 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+
+          {/* Dashboard của thủ thư */}
+          <Route
+            path="/librarian/*"
+            element={
+              <ProtectedRoute allowedRoles={["librarian"]}>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/management_member"
             element={
@@ -185,8 +196,6 @@ function App() {
             }
           />
           
-
-
 
         </Routes>
       </Router>
