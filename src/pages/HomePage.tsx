@@ -1,3 +1,4 @@
+import DashboardPage from "./DashboardPage";
 // src/pages/HomePage.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
@@ -16,6 +17,7 @@ import CustomBar from "../components/CustomBar";
 import Skeleton from "../components/Skeleton";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+
 
 // ================== Types ==================
 type ModelName =
@@ -198,6 +200,12 @@ const HomePage: React.FC = () => {
           </p>
         </div>
 
+
+        {/* Nếu role = librarian thì hiển thị Dashboard */}
+        {user?.role === "librarian" && (
+          <div className="mt-6">
+            <DashboardPage />
+
         {canViewChart && (
           <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
             <h2 className="text-2xl font-bold text-blue-600 mb-4">
@@ -268,6 +276,7 @@ const HomePage: React.FC = () => {
                 </p>
               </div>
             )}
+
           </div>
         )}
       </div>
