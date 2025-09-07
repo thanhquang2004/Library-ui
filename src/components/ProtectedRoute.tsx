@@ -9,7 +9,11 @@ interface Props {
 }
 
 const ProtectedRoute: React.FC<Props> = ({ allowedRoles, children }) => {
-  const { user } = useAuth();
+  const { user , loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // hoặc spinner
+  }
 
   if (!user) {
     // Chưa login thì về trang login

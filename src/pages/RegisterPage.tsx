@@ -20,33 +20,44 @@ const RegisterPage: React.FC = () => {
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Validate email format
   const validateEmail = (email: string) => {
-    // Email hợp lệ theo chuẩn RFC cơ bản
     const regex = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
     return regex.test(email);
   };
 
-  const validatePassword = (password: string) => {
-    // Ít nhất 1 chữ thường, 1 chữ hoa, 1 số, 1 ký tự đặc biệt, tối thiểu 8 ký tự
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    return regex.test(password);
-  };
+  // Validate phone
+  const validatePhone = (phone: string) => /^[0-9]{10}$/.test(phone);
 
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    return phoneRegex.test(phone);
+  // Check email exists by calling API
+  const checkEmailExists = async (email: string) => {
+    try {
+      const res = await axios.post(`${API_BASE}/auth/check-email`, { email });
+      return res.data.exists; // backend trả về { exists: true/false }
+    } catch {
+      return false; // Nếu lỗi thì coi như không tồn tại
+    }
   };
 
   const handleSubmit = async (data: typeof formData) => {
     setError(null);
+    setSuccess(null);
+
+    // Validate username
+    if (!data.username.trim()) {
+      setError("Tên người dùng không được để trống.");
+      return;
+    }
 
     // Validate email
     if (!validateEmail(data.email)) {
@@ -54,11 +65,16 @@ const RegisterPage: React.FC = () => {
       return;
     }
 
+    // Check email tồn tại
+    const exists = await checkEmailExists(data.email);
+    if (exists) {
+      setError("Email đã tồn tại. Vui lòng chọn email khác.");
+      return;
+    }
+
     // Validate password
-    if (!validatePassword(data.password)) {
-      setError(
-        "Mật khẩu phải chứa ít nhất 1 chữ thường, 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt (@$!%*?&), tối thiểu 8 ký tự."
-      );
+    if (!data.password.trim()) {
+      setError("Mật khẩu không được để trống.");
       return;
     }
 
@@ -90,14 +106,14 @@ const RegisterPage: React.FC = () => {
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE}/auth/register`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (res.status === 201 && res.data.success) {
-        alert("Đăng ký thành công!");
-        navigate("/");
+        setSuccess("Đăng ký thành công!");
+              setTimeout(() => {
+          navigate("/");
+        }, 2000);
       }
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
@@ -123,7 +139,7 @@ const RegisterPage: React.FC = () => {
       {/* Cột logo */}
       <div className="w-3/5 flex flex-col items-center justify-center p-8">
         <img
-          src="/src/img/logo-login.png"
+          src="/logo-login.png"
           alt="Library"
           className="max-w-md w-full mb-6 rounded-lg"
         />
@@ -131,20 +147,21 @@ const RegisterPage: React.FC = () => {
           onClick={() => navigate("/")}
           className="mt-4 px-6 py-2 bg-white text-[#00ACE8] font-semibold rounded-lg shadow hover:bg-gray-100"
         >
-          ← Back to Home
+          ← Trở về Trang Chủ
         </button>
       </div>
 
       {/* Cột form */}
       <div className="w-full md:w-2/5 max-w-lg bg-white rounded-xl shadow-lg p-8 max-h-[90vh] overflow-y-auto mr-36">
         <h2 className="text-3xl font-bold text-center mb-6 text-[#00ACE8]">
-          Sign Up
+          Đăng ký
         </h2>
         <RegisterForm
           formData={formData}
           onChange={handleChange}
           onSubmit={handleSubmit}
           error={error}
+          success={success}
           loading={loading}
           isAdmin={user?.role === "admin"}
         />

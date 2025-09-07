@@ -12,6 +12,7 @@ interface RegisterFormProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
   onSubmit: (data: RegisterFormProps["formData"]) => void;
   error: string | null;
+  success?: string | null;
   loading?: boolean;
   isAdmin?: boolean;
 }
@@ -21,12 +22,12 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   onChange,
   onSubmit,
   error,
+  success,
   loading = false,
   isAdmin = false,
 }) => {
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
-  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const phoneRegex = /^[0-9]{10}$/;
@@ -120,6 +121,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       )}
 
       {error && <p className="text-red-500 text-sm">{error}</p>}
+      {success && <p className="text-green-600 text-sm">{success}</p>}
 
       <div>
         <button
@@ -129,7 +131,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             loading ? "bg-gray-400" : "bg-[#00ACE8] hover:bg-blue-600"
           } text-white font-semibold py-3 rounded-lg transition duration-200`}
         >
-          {loading ? "Registering..." : "Register"}
+          {loading ? "Đang đăng ký..." : "Đăng ký"}
         </button>
       </div>
     </form>
