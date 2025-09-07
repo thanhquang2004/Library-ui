@@ -61,10 +61,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ formData, onChange, onSubmit, err
             onChange={onChange}
             className="mr-2"
           />
-          Remember me
+          Ghi nhớ đăng nhập
         </label>
         <a href="/forgot-password" className="text-blue-500 hover:underline">
-          Forgot password?
+          Quên mật khẩu?
         </a>
       </div>
 
@@ -75,7 +75,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ formData, onChange, onSubmit, err
           type="submit"
           className="w-full bg-[#00ACE8] hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition duration-200"
         >
-          Login
+          Đăng nhập
         </button>
       </div>
     </form>
