@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaBook, FaUserEdit, FaLayerGroup, FaCopy } from "react-icons/fa";
+import { FaBook, FaUserEdit, FaLayerGroup, FaCopy, FaTags, FaIdCard } from "react-icons/fa"; 
 import SidebarLayout from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 
@@ -31,6 +31,18 @@ export default function ResourceManagementPage() {
       description: "Quản lý bản sao, tình trạng sách",
       icon: <FaCopy className="text-orange-500 text-3xl" />,
       path: "/bookitems-list",
+    },
+    {
+      title: "Danh mục sách",
+      description: "Quản lý thể loại và danh mục sách",
+      icon: <FaTags className="text-pink-500 text-3xl" />,
+      path: "/categories-list",
+    },
+    {
+      title: "Thẻ mượn",
+      description: "Quản lý thẻ mượn của độc giả",
+      icon: <FaIdCard className="text-red-500 text-3xl" />,
+      path: "/borrowcards-list",
     },
   ];
 

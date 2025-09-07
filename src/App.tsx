@@ -16,6 +16,12 @@ import SystemSettingsPage from "./pages/SystemSettingsPage";
 import StatisticsPage from "./pages/StatisticsPage";
 import LibraryManagementPage from "./pages/ResourceManagementPage.tsx";
 import BookManagementPage from "./pages/BookManagementPage";
+import AuthorManagementPage from "./pages/AuthorManagementPage.tsx";
+import RackManagementPage from "./pages/RackManagementPage.tsx";
+import BookItemManagementPage from "./pages/BookItemManagementPage.tsx";
+import CategoriesListPage from "./pages/CategoriesListPage.tsx";
+import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
+
 
 
 function App() {
@@ -78,10 +84,47 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/authors-list"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <AuthorManagementPage />
+              </ProtectedRoute>
+            }
+          />
+            <Route
+            path="/racks-list"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <RackManagementPage/>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bookitems-list"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <BookItemManagementPage/>
+              </ProtectedRoute>
+            }
+          />
 
-          
-
-          
+          <Route
+            path="/categories-list"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <CategoriesListPage/>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/borrowcards-list"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <LibraryCardManagementPage/>
+              </ProtectedRoute>
+            }
+          />
 
           {/* Các Route đã có từ trước */}
           <Route
@@ -137,6 +180,9 @@ function App() {
             }
           />
           
+
+
+
         </Routes>
       </Router>
     </AuthProvider>
