@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import AccountPage from "./pages/AccountPage";
+
 import BookListPage from "./components/BookListPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
@@ -22,6 +23,9 @@ import BookItemManagementPage from "./pages/BookItemManagementPage.tsx";
 import CategoriesListPage from "./pages/CategoriesListPage.tsx";
 import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
 
+
+
+import BookListPage from "./pages/BookListPage"; 
 
 
 function App() {
@@ -53,7 +57,7 @@ function App() {
             }
           />
 
-          {/* Sách: Toàn bộ user đã login */}
+
           <Route
             path="/books"
             element={
@@ -62,6 +66,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           
           
           
@@ -127,6 +132,7 @@ function App() {
           />
 
           {/* Các Route đã có từ trước */}
+
           <Route
             path="/register"
             element={

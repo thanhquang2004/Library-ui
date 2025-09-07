@@ -132,6 +132,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
             )}
           </ul>
 
+
           <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 mt-6">
             Liên hệ hỗ trợ
           </p>
@@ -152,6 +153,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
                 <div className="space-y-2">
                   <Skeleton_ui className="h-4 w-24" />
                   <Skeleton_ui className="h-3 w-16" />
+
                 </div>
               ) : (
                 <>
