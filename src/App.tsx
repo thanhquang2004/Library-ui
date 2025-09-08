@@ -24,6 +24,8 @@ import RackManagementPage from "./pages/RackManagementPage.tsx";
 import BookItemManagementPage from "./pages/BookItemManagementPage.tsx";
 import CategoriesListPage from "./pages/CategoriesListPage.tsx";
 import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
+import BorrowReturnPage from "./pages/BorrowReturnPage.tsx";
+
 
 
 function App() {
@@ -195,6 +197,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/borrow-return"
+            element={
+              <ProtectedRoute allowedRoles={["admin" , "librarian"]}>
+                <BorrowReturnPage />
+              </ProtectedRoute>
+            }
+          />
+          
           
 
         </Routes>
