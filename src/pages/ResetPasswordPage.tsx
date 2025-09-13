@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from "../api";
 
 const ResetPasswordPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,7 +30,7 @@ const ResetPasswordPage: React.FC = () => {
     }
 
     try {
-      const res = await axios.post(`${API_BASE}/users/reset-password`, { token, newPassword });
+      const res = await api.post(`/users/reset-password`, { token, newPassword });
       if (res.data.success) {
         setSuccess("Đổi mật khẩu thành công!");
         setTimeout(() => {
