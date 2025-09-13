@@ -1,4 +1,4 @@
-import DashboardPage from "./DashboardPage";
+//import DashboardPage from "./DashboardPage";
 // src/pages/HomePage.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
@@ -201,12 +201,12 @@ const HomePage: React.FC = () => {
         </div>
 
 
-        {/* Nếu role = librarian thì hiển thị Dashboard */}
+        {/* Nếu role = librarian thì hiển thị Dashboard
         {user?.role === "librarian" && (
           <div className="mt-6">
             <DashboardPage />
           </div>
-        )}
+        )} */}
 
         {canViewChart && (
           <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
