@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import axios, { AxiosError } from "axios";
+import  { AxiosError } from "axios";
 import { Virtuoso } from "react-virtuoso";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaSync } from "react-icons/fa";
 
 import SidebarLayout from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
+import api from "../api";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+
 
 type ItemStatus = "available" | "loaned" | "reserved";
 
@@ -126,18 +127,12 @@ export default function BookItemManagementPage() {
     rackId: undefined,
   });
 
-  const authHeader = useMemo(
-    () => (token ? { Authorization: `Bearer ${token}` } : undefined),
-    [token]
-  );
-
   // load items
   const loadData = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await axios.get<GetAllBookItemsResponse>(`${API_BASE}/book-items`, {
-        headers: authHeader,
+      const res = await api.get<GetAllBookItemsResponse>(`/book-items`, {
         params: { status: status || undefined, page, limit },
       });
       setItems(res.data.data.bookItems);
@@ -147,35 +142,33 @@ export default function BookItemManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, authHeader, page, limit, status]);
+  }, [token, page, limit, status]);
 
   // load books for dropdown (search-as-you-type)
   const loadBooks = useCallback(async (query: string) => {
     if (!token) return;
     try {
-      const res = await axios.get<BookOption[]>(`${API_BASE}/books/search`, {
-        headers: authHeader,
+      const res = await api.get<BookOption[]>(`/books/search`, {
         params: { query: query || "" },
       });
       setBooks(res.data);
     } catch (e) {
       console.error("Failed to load books:", e);
     }
-  }, [token, authHeader]);
+  }, [token]);
 
   // load racks for dropdown
   const loadRacks = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get<{ success: boolean; data: { racks: RackOption[] } }>(`${API_BASE}/racks`, {
-        headers: authHeader,
+      const res = await api.get<{ success: boolean; data: { racks: RackOption[] } }>(`/racks`, {
         params: { limit: 1000 },
       });
       if (Array.isArray(res.data.data.racks)) setRacks(res.data.data.racks);
     } catch (e) {
       console.error("Failed to load racks:", e);
     }
-  }, [token, authHeader]);
+  }, [token]);
 
   useEffect(() => {
     if (!token || authLoading) return;
@@ -237,7 +230,7 @@ export default function BookItemManagementPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Xóa bản sao này?")) return;
     try {
-      await axios.delete<DeleteResponse>(`${API_BASE}/book-items/${id}`, { headers: authHeader });
+      await api.delete<DeleteResponse>(`/book-items/${id}`);
       await loadData();
     } catch (e) {
       console.error(e);
@@ -268,9 +261,9 @@ export default function BookItemManagementPage() {
       };
 
       if (showModal === "create") {
-        await axios.post<CreateUpdateResponse>(`${API_BASE}/book-items`, payload, { headers: authHeader });
+        await api.post<CreateUpdateResponse>(`/book-items`, payload);
       } else if (showModal === "edit" && selected) {
-        await axios.put<CreateUpdateResponse>(`${API_BASE}/book-items/${selected._id}`, payload, { headers: authHeader });
+        await api.put<CreateUpdateResponse>(`/book-items/${selected._id}`, payload);
       }
       setShowModal(null);
       setSelected(null);
@@ -285,22 +278,16 @@ export default function BookItemManagementPage() {
 
   const changeStatus = async (id: string, next: ItemStatus) => {
     try {
-      const token = localStorage.getItem("token"); 
       if (!token) {
         alert("Bạn chưa đăng nhập");
         return;
       }
   
-      console.log("Changing status", id, next, token);
+      console.log("Changing status", id, next);
   
-      const res = await axios.put<UpdateStatusResponse>(
-        `${API_BASE}/book-items/${id}/status`,
-        { status: next },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const res = await api.put<UpdateStatusResponse>(
+        `/book-items/${id}/status`,
+        { status: next }
       );
   
       console.log(res.data);
@@ -317,9 +304,7 @@ export default function BookItemManagementPage() {
     if (!code) return loadData();
     try {
       setLoading(true);
-      const res = await axios.get<GetByBarcodeResponse>(`${API_BASE}/book-items/${encodeURIComponent(code)}`, {
-        headers: authHeader,
-      });
+      const res = await api.get<GetByBarcodeResponse>(`/book-items/${encodeURIComponent(code)}`);
       setItems([res.data.data]);
       setTotal(1);
     } catch {

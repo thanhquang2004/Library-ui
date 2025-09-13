@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import axios, { AxiosError } from "axios";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye } from "react-icons/fa";
 import SidebarLayout from "../components/Sidebar";
@@ -47,6 +47,7 @@ export default function BookManagementPage() {
   const [showModal, setShowModal] = useState<"create" | "edit" | "view" | null>(null);
   const [formData, setFormData] = useState<Partial<Book>>({});
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null); // Thêm state để hiển thị lỗi khi tải dữ liệu
 
   const formatDate = (isoDate: string) => {
     const date = new Date(isoDate);
@@ -54,18 +55,25 @@ export default function BookManagementPage() {
     return date.toLocaleDateString("vi-VN");
   };
 
+  // Helper function để kiểm tra quyền
+  const canEditOrDelete = useMemo(() => {
+    return user?.role === "admin" || user?.role === "librarian";
+  }, [user]);
+
   // Load authors và books
   const loadData = useCallback(async () => {
     if (!token) return;
     setLoadingBooks(true);
+    setLoadError(null);
     try {
       // Lấy danh sách tác giả
       const authorRes = await axios.get<Author[]>(`${API_BASE}/author/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const authorMap = new Map<string, string>();
-      authorRes.data.forEach(a => authorMap.set(a.authorId, a.name));
       setAuthors(authorRes.data);
+
+      const authorsMap = new Map<string, string>();
+      authorRes.data.forEach(a => authorsMap.set(a.authorId, a.name));
 
       // Lấy danh sách sách
       const bookRes = await axios.get<BookApi[]>(`${API_BASE}/books/search`, {
@@ -75,28 +83,27 @@ export default function BookManagementPage() {
 
       // Map authorIds -> authorNames
       const enrichedBooks: Book[] = bookRes.data.map((b) => {
-  const authorIds: string[] = b.authors.map(a => {
-    if (typeof a === "string") return a;          // trường hợp chỉ là id string
-    return (a as { _id: string; name?: string })._id; // trường hợp object {_id, name?}
-  });
+        // Lấy danh sách ID tác giả
+        const authorIds: string[] = b.authors.map(a => {
+          if (typeof a === "string") return a;
+          return (a as { _id: string; name?: string })._id;
+        });
 
-  const authorNames: string[] = b.authors.map(a => {
-    if (typeof a === "string") return "(Chưa có tên)"; // nếu chỉ id không có name
-    return (a as { _id: string; name?: string }).name || "(Chưa có tên)";
-  });
+        // Lấy danh sách tên tác giả dựa trên authorsMap đã tạo ở trên
+        const authorNames: string[] = authorIds.map(id => authorsMap.get(id) || "(Không rõ tên)");
 
-  return {
-    ...b,
-    bookId: b._id,
-    authors: authorIds,  // dùng cho Select
-    authorNames,         // dùng để hiển thị
-  };
-});
-
+        return {
+          ...b,
+          bookId: b._id,
+          authors: authorIds, // dùng cho Select
+          authorNames,       // dùng để hiển thị
+        };
+      });
 
       setBooks(enrichedBooks);
     } catch (err) {
       console.error("Error loading data:", err);
+      setLoadError("Không thể tải dữ liệu. Vui lòng thử lại.");
     } finally {
       setLoadingBooks(false);
     }
@@ -109,6 +116,7 @@ export default function BookManagementPage() {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Bạn có chắc muốn xóa sách này?")) return;
+    setErrorMsg(null);
     try {
       await axios.delete(`${API_BASE}/books/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -116,20 +124,18 @@ export default function BookManagementPage() {
       loadData();
     } catch (err) {
       console.error("Error deleting book", err);
+      const axiosErr = err as AxiosError<{ error: string }>;
+      setErrorMsg(`Lỗi khi xóa: ${axiosErr.response?.data?.error || "Không rõ lỗi"}`);
     }
   };
 
   const handleSubmit = async () => {
-    if (
-      !formData.title ||
-      !formData.isbn ||
-      !formData.publisher ||
-      !formData.bookLanguage ||
-      !formData.publicationDate ||
-      !formData.numberOfPages ||
-      !formData.format ||
-      !formData.authors?.length
-    ) {
+    // Rút gọn logic kiểm tra validation
+    const requiredFields = ['title', 'isbn', 'publisher', 'bookLanguage', 'publicationDate', 'numberOfPages', 'format'];
+    const hasMissingField = requiredFields.some(field => !formData[field as keyof Partial<Book>]);
+    const hasMissingAuthors = !formData.authors || formData.authors.length === 0;
+    
+    if (hasMissingField || hasMissingAuthors) {
       setErrorMsg("Vui lòng điền đầy đủ các thông tin bắt buộc");
       return;
     }
@@ -144,14 +150,13 @@ export default function BookManagementPage() {
         categories: formData.categories?.map(c => c.trim()).filter(Boolean),
         publisher: formData.publisher,
         publicationDate: formData.publicationDate,
-        bookLanguage: formData.bookLanguage as "vi" | "en",
+        bookLanguage: formData.bookLanguage,
         numberOfPages: formData.numberOfPages,
-        format: formData.format as "hardcover" | "paperback" | "ebook" ,
+        format: formData.format,
         digitalUrl: formData.digitalUrl,
         coverImage: formData.coverImage,
-        authors: formData.authors as string[],
+        authors: formData.authors,
       };
-      console.log("Payload gửi lên API:", payload);
 
       if (showModal === "create") {
         await axios.post(`${API_BASE}/books`, payload, { headers: { Authorization: `Bearer ${token}` } });
@@ -186,13 +191,15 @@ export default function BookManagementPage() {
             onChange={(e) => setQuery(e.target.value)}
           />
           <button className="p-2 bg-blue-500 text-white rounded" onClick={loadData}><FaSearch /></button>
-          {(user?.role === "admin" || user?.role === "librarian") && (
+          {canEditOrDelete && (
             <button className="flex items-center gap-2 p-2 bg-green-500 text-white rounded"
               onClick={() => { setShowModal("create"); setFormData({}); }}>
               <FaPlus /> Thêm sách
             </button>
           )}
         </div>
+        
+        {loadError && <p className="text-red-500 mb-4">{loadError}</p>}
 
         {/* Table header */}
         <div className="grid grid-cols-8 bg-gray-100 border-b font-semibold">
@@ -215,7 +222,7 @@ export default function BookManagementPage() {
               itemContent={(index) => {
                 const b = books[index];
                 return (
-                  <div className="grid grid-cols-8 border-b items-center text-sm">
+                  <div key={b.bookId} className="grid grid-cols-8 border-b items-center text-sm">
                     <div className="p-2">
                       {b.coverImage ? <img src={b.coverImage} alt={b.title} className="w-12 h-16 object-cover rounded" loading="lazy"
                         onError={(e) => { e.currentTarget.src = "/placeholder.png"; }} /> :
@@ -229,7 +236,7 @@ export default function BookManagementPage() {
                     <div className="p-2">{b.authorNames.join(", ")}</div>
                     <div className="p-2 flex gap-2">
                       <button className="p-1 bg-blue-500 text-white rounded" onClick={() => { setSelectedBook(b); setShowModal("view"); }}><FaEye /></button>
-                      {(user?.role === "admin" || user?.role === "librarian") && <>
+                      {canEditOrDelete && <>
                         <button className="p-1 bg-yellow-500 text-white rounded" onClick={() => { 
                           setSelectedBook(b); 
                           setFormData({

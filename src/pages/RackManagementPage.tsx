@@ -1,11 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
-import axios, { AxiosError } from "axios";
+import  { AxiosError } from "axios";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye } from "react-icons/fa";
 import SidebarLayout from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 import { Virtuoso } from "react-virtuoso";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from "../api";
 
 interface Rack {
   _id: string;
@@ -44,8 +43,8 @@ export default function RackManagementPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await axios.get<RackResponse>(`${API_BASE}/racks`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await api.get<RackResponse>(`/racks`, {
+        
       });
 
       const result = res.data.data;
@@ -71,8 +70,8 @@ export default function RackManagementPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Bạn có chắc muốn xóa kệ sách này?")) return;
     try {
-      await axios.delete(`${API_BASE}/racks/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await api.delete(`/racks/${id}`, {
+        
       });
       loadData();
     } catch (err) {
@@ -97,12 +96,12 @@ export default function RackManagementPage() {
       };
 
       if (showModal === "create") {
-        await axios.post(`${API_BASE}/racks`, payload, {
+        await api.post(`/racks`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else if (showModal === "edit" && selectedRack) {
-        await axios.put(`${API_BASE}/racks/${selectedRack._id}`, payload, {
-          headers: { Authorization: `Bearer ${token}` },
+        await api.put(`/racks/${selectedRack._id}`, payload, {
+          
         });
       }
 

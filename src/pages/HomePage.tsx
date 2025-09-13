@@ -1,4 +1,3 @@
-import DashboardPage from "./DashboardPage";
 // src/pages/HomePage.tsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
@@ -10,14 +9,13 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
 import SidebarLayout from "../components/Sidebar";
 import CustomBar from "../components/CustomBar";
 import Skeleton from "../components/Skeleton";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
-
+import DashboardPage from "./DashboardPage";
+import api from "../api";
 
 // ================== Types ==================
 type ModelName =
@@ -85,103 +83,102 @@ const HomePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // New states for the paginated table
+  const [paginatedLogs, setPaginatedLogs] = useState<AuditLog[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingTable, setLoadingTable] = useState(false);
+
   // ---------- helpers ----------
-  const processData = (src: AuditLog[]) => {
-    const userMap: Record<string, { name: string; timestamps: number[] }> = {};
+  const processDataForChart = (src: AuditLog[]) => {
+    const userMap: Record<string, { name: string; actionCount: number }> = {};
 
     for (const log of src) {
-      // Thêm kiểm tra null/undefined cho log.user
       if (!log.user || !log.user._id) {
-        continue; // Bỏ qua bản ghi nếu user hoặc _id không tồn tại
+        continue;
       }
-
       const userId = log.user._id;
       if (!userMap[userId]) {
         userMap[userId] = {
           name: log.user.username || log.user.name,
-          timestamps: [],
+          actionCount: 0,
         };
       }
-      const ts = new Date(log.timestamp).getTime();
-      if (!Number.isNaN(ts)) userMap[userId].timestamps.push(ts);
+      userMap[userId].actionCount++;
     }
-
+    
     const results: ChartData[] = Object.entries(userMap).map(
-      ([userId, { name, timestamps }]) => {
-        const min = Math.min(...timestamps);
-        const max = Math.max(...timestamps);
-        const durationHours = (max - min) / 1000 / 60 / 60;
-        const durationDays = durationHours / 24;
+      ([userId, { name, actionCount }]) => {
         return {
           userId,
           name,
-          duration: Number.isFinite(durationDays) ? durationDays : 0,
+          duration: actionCount,
         };
       }
     );
-
     setChartData(results);
+  };
+  
+  const prettyDetails = (d: AuditDetails): string => {
+    if (d == null) return "";
+    return typeof d === "string" ? d : JSON.stringify(d, null, 2);
   };
 
   // ---------- API calls ----------
-  const fetchAuditLogs = useCallback(async () => {
+  const fetchHomePageData = useCallback(async (model: ModelName | "User", page: number = 1) => {
     if (!token) return;
-
     setLoading(true);
+    setLoadingTable(true);
     setError(null);
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const startDate = sevenDaysAgo.toISOString();
+
     try {
-      const allLogs: AuditLog[] = [];
-      let currentPage = 1;
-      const limit = 100;
-      let hasMore = true;
-      const delay = 500; // Thêm độ trễ để tránh lỗi 429
-
-      while (hasMore) {
-        const res = await axios.get<ApiEnvelope<AuditLogsResponse>>(
-          `${API_BASE}/audit-logs`,
-          { 
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: currentPage, limit: limit, model: selectedModel }
-          }
-        );
-
-        const data = res.data?.data;
-        if (data?.auditLogs && data.auditLogs.length > 0) {
-          allLogs.push(...data.auditLogs);
-          if (data.total !== undefined && allLogs.length >= data.total) {
-            hasMore = false;
-          } else {
-            currentPage++;
-            if (hasMore) {
-              await new Promise(resolve => setTimeout(resolve, delay));
-            }
-          }
-        } else {
-          hasMore = false;
+      // 1. Fetch data for the chart using api
+      const chartRes = await api.get<ApiEnvelope<AuditLogsResponse>>(
+        `/audit-logs`,
+        {
+          params: { startDate, model: model }, 
         }
-      }
+      );
+      processDataForChart(chartRes.data?.data?.auditLogs || []);
 
-      processData(allLogs);
+      // 2. Fetch paginated data for the table using api
+      const tableRes = await api.get<ApiEnvelope<AuditLogsResponse>>(
+        `/audit-logs`,
+        {
+          params: { page: page, limit: 10, model: model }
+        }
+      );
+      const tableData = tableRes.data?.data;
+      setPaginatedLogs(tableData?.auditLogs || []);
+      setTotalPages(Math.ceil((tableData?.total ?? 0) / 10));
+      setCurrentPage(page);
+
     } catch (e: unknown) {
       const err = e as AxiosError;
-      console.error("❌ Error fetching audit logs:", err.response ?? err);
+      console.error("❌ Error fetching data:", err.response ?? err);
       setChartData([]);
+      setPaginatedLogs([]);
       if (err.response?.status === 429) {
           setError("Tải dữ liệu thất bại: Vượt quá giới hạn yêu cầu. Vui lòng thử lại sau.");
       } else {
-          setError("Không thể tải dữ liệu thống kê.");
+          setError("Không thể tải dữ liệu.");
       }
     } finally {
       setLoading(false);
+      setLoadingTable(false);
     }
-  }, [token, selectedModel]);
+  }, [token]);
 
   // ---------- Effects ----------
   useEffect(() => {
     if (token && user?.role === "admin") {
-      fetchAuditLogs();
+      fetchHomePageData(selectedModel, currentPage);
     }
-  }, [token, user, fetchAuditLogs]);
+  }, [token, user, selectedModel, currentPage, fetchHomePageData]);
 
   const canViewChart = user?.role === "admin";
 
@@ -201,7 +198,6 @@ const HomePage: React.FC = () => {
         </div>
 
 
-        {/* Nếu role = librarian thì hiển thị Dashboard */}
         {user?.role === "librarian" && (
           <div className="mt-6">
             <DashboardPage />
@@ -211,17 +207,18 @@ const HomePage: React.FC = () => {
         {canViewChart && (
           <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
             <h2 className="text-2xl font-bold text-blue-600 mb-4">
-              📊 Thống kê hoạt động chung
+              📊 Nhật ký hoạt động chung (7 ngày gần nhất)
             </h2>
 
             <div className="mb-4">
               <h3 className="font-semibold mb-2">
-                Chọn model để xem thống kê:
+                Chọn model để xem nhật ký:
               </h3>
               <select
-                onChange={(e) =>
-                  setSelectedModel(e.target.value as ModelName | "User")
-                }
+                onChange={(e) => {
+                  setSelectedModel(e.target.value as ModelName | "User");
+                  setCurrentPage(1); // Reset page on model change
+                }}
                 className="border px-3 py-2 rounded-lg"
                 value={selectedModel}
               >
@@ -238,9 +235,6 @@ const HomePage: React.FC = () => {
                 <option value="BookReservation">BookReservation</option>
                 <option value="Category">Category</option>
               </select>
-              <p className="mt-4 text-center text-sm font-semibold">
-                Thời gian hoạt động (ngày)
-              </p>
             </div>
 
             {loading ? (
@@ -262,7 +256,7 @@ const HomePage: React.FC = () => {
                     <YAxis />
                     <Tooltip
                       formatter={(value: number) =>
-                        `${value.toFixed(2)} ngày hoạt động`
+                        `${value} hành động`
                       }
                     />
                     <Bar
@@ -273,13 +267,76 @@ const HomePage: React.FC = () => {
                   </BarChart>
                 </ResponsiveContainer>
                 <p className="mt-4 text-center text-sm text-gray-500">
-                  Biểu đồ tổng thời gian hoạt động của người dùng trên model{" "}
+                  Biểu đồ tổng số hành động của người dùng trên model{" "}
                   <strong>{selectedModel}</strong>.
                 </p>
               </div>
             )}
-
           </div>
+        )}
+
+        {canViewChart && (
+            <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
+                <h2 className="text-2xl font-bold text-blue-600 mb-4">
+                  📋 Hoạt động chi tiết
+                </h2>
+                {loadingTable ? (
+                    <p>⏳ Đang tải dữ liệu chi tiết...</p>
+                ) : paginatedLogs.length === 0 ? (
+                    <p className="text-gray-500">Không có dữ liệu</p>
+                ) : (
+                    <>
+                    <table className="min-w-full border border-gray-200 mb-6">
+                        <thead>
+                        <tr className="bg-gray-100">
+                            <th className="border px-4 py-2">Tên</th>
+                            <th className="border px-4 py-2">Hành động</th>
+                            <th className="border px-4 py-2">Model</th>
+                            
+                            <th className="border px-4 py-2">Chi tiết</th>
+                            <th className="border px-4 py-2">Thời gian</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {paginatedLogs.map((log, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                            <td className="border px-4 py-2">{log.user?.username || log.user?.name || 'N/A'}</td>
+                            <td className="border px-4 py-2">{log.action || 'N/A'}</td>
+                            <td className="border px-4 py-2">{log.target?.model || 'N/A'}</td>
+                            
+                            <td className="border px-4 py-2 whitespace-pre-wrap">
+                                {prettyDetails(log.details)}
+                            </td>
+                            <td className="border px-4 py-2">
+                                {new Date(log.timestamp).toLocaleString("vi-VN", { dateStyle: 'short' })}
+                            </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+
+                    <div className="flex justify-between items-center mb-4">
+                        <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1 || loadingTable}
+                        className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+                        >
+                        Trang trước
+                        </button>
+                        <span>
+                        Trang {currentPage} trên {totalPages}
+                        </span>
+                        <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages || loadingTable}
+                        className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+                        >
+                        Trang sau
+                        </button>
+                    </div>
+                    </>
+                )}
+            </div>
         )}
       </div>
     </SidebarLayout>

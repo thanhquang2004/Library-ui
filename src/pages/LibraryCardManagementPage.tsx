@@ -2,9 +2,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import SidebarLayout from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from "../api";
 
 interface User {
   _id: string;
@@ -23,31 +21,35 @@ interface LibraryCard {
 }
 
 const LibraryCardManagementPage: React.FC = () => {
-  const { user, token, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cards, setCards] = useState<Record<string, LibraryCard | null>>({});
+  const [cards, setCards] = useState<Record<string, LibraryCard | null | undefined>>({});
 
-  // 🔹 Lấy danh sách user
+  // States mới cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 10; // Số lượng user mỗi trang
+
+  // 🔹 Lấy danh sách user có phân trang
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE}/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get(`/users?page=${currentPage}&limit=${pageSize}`);
 
-      const userList: User[] = Array.isArray(res.data)
-        ? res.data
-        : res.data.users || res.data.data?.users || [];
+      const userList: User[] = Array.isArray(res.data.data.users)
+        ? res.data.data.users
+        : res.data.data?.users || [];
+      const totalUsers = res.data.data.total;
 
-      console.log("👉 Users:", userList);
       setUsers(userList);
+      setTotalPages(Math.ceil(totalUsers / pageSize));
     } catch (err) {
       console.error("❌ Error fetching users:", err);
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [currentPage]); // Dependency là currentPage để tự động load lại khi chuyển trang
 
   useEffect(() => {
     fetchUsers();
@@ -55,11 +57,12 @@ const LibraryCardManagementPage: React.FC = () => {
 
   // 🔹 Chỉ librarian mới fetch card
   const fetchCardByUser = async (u: User) => {
-    if (user?.role !== "librarian") return; // admin không gọi API này
+    if (user?.role !== "librarian") return;
     try {
-      const res = await axios.get(`${API_BASE}/library-cards/user/${u._id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Đặt giá trị undefined để hiển thị trạng thái đang tải
+      setCards((prev) => ({ ...prev, [u._id]: undefined }));
+
+      const res = await api.get(`/library-cards/user/${u._id}`);
       setCards((prev) => ({ ...prev, [u._id]: res.data }));
     } catch {
       setCards((prev) => ({ ...prev, [u._id]: null }));
@@ -71,18 +74,9 @@ const LibraryCardManagementPage: React.FC = () => {
     try {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
       const cardNumber = `LIB${randomNum}`;
-
       const body = { cardNumber, userId: u._id };
 
-      console.log("📤 Creating card:", body);
-
-      await axios.post(`${API_BASE}/library-cards`, body, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
+      await api.post("/library-cards", body);
       if (user?.role === "librarian") fetchCardByUser(u);
     } catch (err) {
       console.error("❌ Error creating card:", err);
@@ -92,11 +86,7 @@ const LibraryCardManagementPage: React.FC = () => {
   // 🔹 Đổi trạng thái (admin + librarian)
   const handleToggleStatus = async (cardNumber: string, u: User) => {
     try {
-      await axios.put(
-        `${API_BASE}/library-cards/${cardNumber}/toggle-status`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.put(`/library-cards/${cardNumber}/toggle-status`, {});
       if (user?.role === "librarian") fetchCardByUser(u);
     } catch (err) {
       console.error("❌ Error toggling card status:", err);
@@ -106,12 +96,23 @@ const LibraryCardManagementPage: React.FC = () => {
   // 🔹 Xóa thẻ (admin + librarian)
   const handleDeleteCard = async (cardNumber: string, u: User) => {
     try {
-      await axios.delete(`${API_BASE}/library-cards/${cardNumber}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/library-cards/${cardNumber}`);
       if (user?.role === "librarian") fetchCardByUser(u);
     } catch (err) {
       console.error("❌ Error deleting card:", err);
+    }
+  };
+
+  // Hàm chuyển trang
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -126,130 +127,140 @@ const LibraryCardManagementPage: React.FC = () => {
         {loading ? (
           <p>Đang tải...</p>
         ) : (
-          <table className="w-full border-collapse border">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border px-4 py-2">Tên</th>
-                <th className="border px-4 py-2">Email</th>
-                <th className="border px-4 py-2">Role</th>
+          <>
+            <table className="w-full border-collapse border">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border px-4 py-2">Tên</th>
+                  <th className="border px-4 py-2">Email</th>
+                  <th className="border px-4 py-2">Role</th>
+                  {user?.role === "librarian" && (
+                    <>
+                      <th className="border px-4 py-2">Mã thẻ</th>
+                      <th className="border px-4 py-2">Trạng thái</th>
+                    </>
+                  )}
+                  <th className="border px-4 py-2">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => {
+                  const card = cards[u._id];
+                  return (
+                    <tr key={u._id} className="text-center">
+                      <td className="border px-4 py-2">
+                        {u.name || u.username}
+                      </td>
+                      <td className="border px-4 py-2">{u.email}</td>
+                      <td className="border px-4 py-2">{u.role}</td>
 
-                {/* Librarian mới thấy cột mã thẻ/trạng thái */}
-                {user?.role === "librarian" && (
-                  <>
-                    <th className="border px-4 py-2">Mã thẻ</th>
-                    <th className="border px-4 py-2">Trạng thái</th>
-                  </>
-                )}
-                <th className="border px-4 py-2">Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => {
-                const card = cards[u._id];
-                return (
-                  <tr key={u._id} className="text-center">
-                    <td className="border px-4 py-2">
-                      {u.name || u.username}
-                    </td>
-                    <td className="border px-4 py-2">{u.email}</td>
-                    <td className="border px-4 py-2">{u.role}</td>
-
-                    {/* Librarian mới xem được chi tiết thẻ */}
-                    {user?.role === "librarian" && (
-                      <>
-                        <td className="border px-4 py-2">
-                          {card
-                            ? card.cardNumber
-                            : card === null
-                            ? "Chưa có thẻ"
-                            : "Chưa tải"}
-                        </td>
-                        <td className="border px-4 py-2">
-                          {card
-                            ? card.active
-                              ? "Hoạt động"
-                              : "Khóa"
-                            : "-"}
-                        </td>
-                      </>
-                    )}
-
-                    <td className="border px-4 py-2 space-x-2">
-                      {/* Librarian: xem / tạo / đổi trạng thái / xóa */}
                       {user?.role === "librarian" && (
                         <>
-                          {card === undefined ? (
-                            <button
-                              onClick={() => fetchCardByUser(u)}
-                              className="bg-blue-500 text-white px-3 py-1 rounded-md"
-                            >
-                              Xem thẻ
-                            </button>
-                          ) : !card ? (
+                          <td className="border px-4 py-2">
+                            {card === undefined
+                              ? "Đang tải..."
+                              : card
+                                ? card.cardNumber
+                                : "Chưa có thẻ"}
+                          </td>
+                          <td className="border px-4 py-2">
+                            {card === undefined
+                              ? "-"
+                              : card
+                                ? card.active
+                                  ? "Hoạt động"
+                                  : "Khóa"
+                                : "-"}
+                          </td>
+                        </>
+                      )}
+                      <td className="border px-4 py-2 space-x-2">
+                        {user?.role === "librarian" && (
+                          <>
+                            {card === undefined ? (
+                              <button
+                                className="bg-gray-400 text-white px-3 py-1 rounded-md"
+                                disabled
+                              >
+                                Đang tải...
+                              </button>
+                            ) : !card ? (
+                              <button
+                                onClick={() => handleCreateCard(u)}
+                                className="bg-green-500 text-white px-3 py-1 rounded-md"
+                              >
+                                Tạo thẻ
+                              </button>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => handleToggleStatus(card.cardNumber, u)}
+                                  className="bg-yellow-500 text-white px-3 py-1 rounded-md"
+                                >
+                                  {card.active ? "Khóa" : "Mở"}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteCard(card.cardNumber, u)}
+                                  className="bg-red-500 text-white px-3 py-1 rounded-md"
+                                >
+                                  Xóa
+                                </button>
+                              </>
+                            )}
+                          </>
+                        )}
+                        {user?.role === "admin" && (
+                          <>
                             <button
                               onClick={() => handleCreateCard(u)}
                               className="bg-green-500 text-white px-3 py-1 rounded-md"
                             >
                               Tạo thẻ
                             </button>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() =>
-                                  handleToggleStatus(card.cardNumber, u)
-                                }
-                                className="bg-yellow-500 text-white px-3 py-1 rounded-md"
-                              >
-                                {card.active ? "Khóa" : "Mở"}
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleDeleteCard(card.cardNumber, u)
-                                }
-                                className="bg-red-500 text-white px-3 py-1 rounded-md"
-                              >
-                                Xóa
-                              </button>
-                            </>
-                          )}
-                        </>
-                      )}
+                            <button
+                              onClick={() => handleToggleStatus("DUMMY", u)}
+                              disabled
+                              className="bg-yellow-500 text-white px-3 py-1 rounded-md opacity-50 cursor-not-allowed"
+                            >
+                              Khóa/Mở
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCard("DUMMY", u)}
+                              disabled
+                              className="bg-red-500 text-white px-3 py-1 rounded-md opacity-50 cursor-not-allowed"
+                            >
+                              Xóa
+                            </button>
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
 
-                      {/* Admin: chỉ tạo / đổi trạng thái / xóa, không xem */}
-                      {user?.role === "admin" && (
-                        <>
-                          <button
-                            onClick={() => handleCreateCard(u)}
-                            className="bg-green-500 text-white px-3 py-1 rounded-md"
-                          >
-                            Tạo thẻ
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleToggleStatus("DUMMY", u) // admin không có cardNumber thật
-                            }
-                            disabled
-                            className="bg-yellow-500 text-white px-3 py-1 rounded-md opacity-50 cursor-not-allowed"
-                          >
-                            Khóa/Mở
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteCard("DUMMY", u) // admin không có cardNumber thật
-                            }
-                            disabled
-                            className="bg-red-500 text-white px-3 py-1 rounded-md opacity-50 cursor-not-allowed"
-                          >
-                            Xóa
-                          </button>
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center mt-4 space-x-2">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md disabled:opacity-50"
+              >
+                Trang trước
+              </button>
+              <span>
+                Trang {currentPage} trên {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md disabled:opacity-50"
+              >
+                Trang sau
+              </button>
+            </div>
+          </>
         )}
       </div>
     </SidebarLayout>
