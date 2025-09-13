@@ -116,7 +116,19 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
             )}
             {user && (user.role === "admin" || user.role === "librarian") && (
             <NavItem icon={<FaExchangeAlt />} label="Quản lý mượn trả" onClick={() => navigate("/borrow-return")} />
+            
   )}
+            
+            {user && (user.role === "admin" || user.role === "librarian") && (
+  <NavItem
+    icon={<FaChartBar />}
+    label="Báo cáo & Thống kê"
+    onClick={() => navigate("/reports")}
+  />
+)}
+
+
+
             {user && user.role === "admin" && (
               <NavItem icon={<FaChartBar />} label="Thống kê" onClick={() => navigate("/statistics")} />
             )}
