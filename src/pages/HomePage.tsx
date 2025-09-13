@@ -292,7 +292,7 @@ const HomePage: React.FC = () => {
                             <th className="border px-4 py-2">Tên</th>
                             <th className="border px-4 py-2">Hành động</th>
                             <th className="border px-4 py-2">Model</th>
-                            <th className="border px-4 py-2">Target ID</th>
+                            
                             <th className="border px-4 py-2">Chi tiết</th>
                             <th className="border px-4 py-2">Thời gian</th>
                         </tr>
@@ -303,7 +303,7 @@ const HomePage: React.FC = () => {
                             <td className="border px-4 py-2">{log.user?.username || log.user?.name || 'N/A'}</td>
                             <td className="border px-4 py-2">{log.action || 'N/A'}</td>
                             <td className="border px-4 py-2">{log.target?.model || 'N/A'}</td>
-                            <td className="border px-4 py-2">{log.target?.id || 'N/A'}</td>
+                            
                             <td className="border px-4 py-2 whitespace-pre-wrap">
                                 {prettyDetails(log.details)}
                             </td>
