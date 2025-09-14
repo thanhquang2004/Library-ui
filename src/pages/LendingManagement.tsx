@@ -149,6 +149,7 @@ export default function LendingManagementPage() {
       setErrMsg(ax.response?.data?.error || "Tạo phiếu mượn thất bại");
     } finally {
       setSaving(false);
+      window.location.reload();
     }
   };
 
@@ -158,6 +159,7 @@ export default function LendingManagementPage() {
     try {
       await api.put(`/book-lendings/${lendingId}/return`);
       await loadLendings();
+      window.location.reload();
     } catch (e) {
       console.error("Return failed:", e);
       alert("Trả sách thất bại");
@@ -165,11 +167,24 @@ export default function LendingManagementPage() {
   };
 
   const handleExtendSubmit = async () => {
-    if (!extendForm.lendingId || !extendForm.newDueDate) return alert("ID hoặc ngày hạn mới không hợp lệ");
+    if (!extendForm.lendingId || !extendForm.newDueDate) {
+      return alert("ID hoặc ngày hạn mới không hợp lệ");
+    }
+
     try {
-      await api.put(`/book-lendings/${extendForm.lendingId}/extend`, { newDueDate: extendForm.newDueDate });
+      // Chuyển "YYYY-MM-DDTHH:mm" -> Date object -> ISO string
+      const newDueDateISO = new Date(extendForm.newDueDate);
+      if (isNaN(newDueDateISO.getTime())) {
+        return alert("Ngày hạn mới không hợp lệ");
+      }
+
+      await api.put(`/book-lendings/${extendForm.lendingId}/extend`, {
+        newDueDate: newDueDateISO.toISOString(),
+      });
+
       setShowModal(null);
       await loadLendings();
+      window.location.reload();
     } catch (e) {
       console.error("Extend failed:", e);
       alert("Gia hạn thất bại");
@@ -182,6 +197,7 @@ export default function LendingManagementPage() {
     try {
       await api.delete(`/book-lendings/${id}`);
       await loadLendings();
+      window.location.reload();
     } catch (e) {
       console.error("Delete failed:", e);
       alert("Xóa thất bại");
@@ -261,7 +277,7 @@ export default function LendingManagementPage() {
               >
                 <div className="p-2">{displayMember(l.member)}</div>
                 <div className="p-2">{l.bookItem ? `${l.bookItem.barcode} - ${l.bookItem.title || ""}` : "-"}</div>
-                <div className="p-2">{l.returnDate ? new Date(l.returnDate).toLocaleString() : "-"}</div>
+                <div className="p-2">{l.lendingDate ? new Date(l.lendingDate).toLocaleString() : "-"}</div>
                 <div className="p-2">{l.dueDate ? new Date(l.dueDate).toLocaleString() : "-"}</div>
                 <div className="p-2">{l.status}</div>
                 <div className="p-2">{l.bookItem?.price ? l.bookItem.price : "-"}</div>

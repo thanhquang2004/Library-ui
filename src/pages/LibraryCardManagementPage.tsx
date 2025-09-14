@@ -55,16 +55,28 @@ const LibraryCardManagementPage: React.FC = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // 🔹 Chỉ librarian mới fetch card
+  useEffect(() => {
+    if (!authLoading && user?.role === "librarian") {
+      users.forEach((u) => fetchCardByUser(u));
+    }
+  }, [users, user, authLoading]);
+
+
+  // Fetch thẻ cho từng user
   const fetchCardByUser = async (u: User) => {
     if (user?.role !== "librarian") return;
+
     try {
-      // Đặt giá trị undefined để hiển thị trạng thái đang tải
       setCards((prev) => ({ ...prev, [u._id]: undefined }));
 
       const res = await api.get(`/library-cards/user/${u._id}`);
-      setCards((prev) => ({ ...prev, [u._id]: res.data }));
-    } catch {
+      console.log("Full response:", res);
+      // Giả sử backend trả { data: card }
+      const cardData = res.data.data || null;
+
+      setCards((prev) => ({ ...prev, [u._id]: cardData }));
+    } catch (err) {
+      console.error(`❌ Failed to fetch card for user ${u._id}:`, err);
       setCards((prev) => ({ ...prev, [u._id]: null }));
     }
   };
