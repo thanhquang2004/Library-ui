@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { 
-  FaHome, FaBook, FaChartBar, FaQuestionCircle, 
+import {
+  FaHome, FaBook, FaChartBar, FaQuestionCircle,
   FaUserCircle, FaUserPlus, FaBars, FaCog, FaGavel, FaExchangeAlt
 } from "react-icons/fa";
 import Skeleton_ui from "./Skeleton.tsx";
@@ -32,7 +32,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, onClick }) => (
 
 const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false); 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [logo, setLogo] = useState<string | null>(null);
 
@@ -83,8 +83,8 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
           transform: sidebarOpen
             ? "translateX(0)"
             : isMobile
-            ? "translateX(-100%)"
-            : "translateX(0)",
+              ? "translateX(-100%)"
+              : "translateX(0)",
         }}
       >
         {/* Header: Logo + Toggle */}
@@ -92,7 +92,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
           {logo ? (
             <img src={logo} alt="Library Logo" className="h-10 object-contain" />
           ) : (
-            <span>LOGO</span>
+            <img src="../public/image.png" alt="Default Logo" className="h-10 object-contain" />
           )}
           {isMobile && (
             <button
@@ -115,17 +115,17 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
               <NavItem icon={<FaBook />} label="Thư Viện" onClick={() => navigate("/library-management")} />
             )}
             {user && (user.role === "admin" || user.role === "librarian") && (
-            <NavItem icon={<FaExchangeAlt />} label="Quản lý mượn trả" onClick={() => navigate("/borrow-return")} />
-            
-  )}
-            
+              <NavItem icon={<FaExchangeAlt />} label="Quản lý mượn trả" onClick={() => navigate("/borrow-return")} />
+
+            )}
+
             {user && (user.role === "admin" || user.role === "librarian") && (
-  <NavItem
-    icon={<FaChartBar />}
-    label="Báo cáo & Thống kê"
-    onClick={() => navigate("/reports")}
-  />
-)}
+              <NavItem
+                icon={<FaChartBar />}
+                label="Báo cáo & Thống kê"
+                onClick={() => navigate("/reports")}
+              />
+            )}
 
 
 
