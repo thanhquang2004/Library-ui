@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import axios, { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
 import SidebarLayout from "../components/Sidebar";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
@@ -17,6 +17,7 @@ export default function CategoriesListPage() {
   const { user, loading: authLoading, token } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null); // Thêm state cho lỗi
 
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -24,9 +25,11 @@ export default function CategoriesListPage() {
     parent: "",
   });
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isAdding, setIsAdding] = useState(false); // Thêm state loading cho nút "Thêm"
 
   const [search, setSearch] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false); // Thêm state loading cho nút "Lưu"
   const [editValues, setEditValues] = useState({
     name: "",
     description: "",
@@ -35,31 +38,41 @@ export default function CategoriesListPage() {
 
   // Lấy danh mục
   const fetchCategories = useCallback(async () => {
+    setLoading(true);
+    setErrorMsg(null);
     try {
-      const res = await axios.get(`${API_BASE}/categories`, {
+      const res = await axios.get<{ data: { categories: Category[] } }>(`${API_BASE}/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setCategories(res.data.data.categories || []);
     } catch (err) {
       console.error("Lỗi fetch:", err);
+      setErrorMsg("Không thể tải danh mục. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
   }, [token]);
 
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    if (token) {
+      fetchCategories();
+    }
+  }, [token, fetchCategories]);
 
   // Thêm danh mục
   const handleAdd = async () => {
-    if (!newCategory.name) return;
+    if (!newCategory.name.trim()) {
+      setErrorMsg("Tên danh mục không được để trống.");
+      return;
+    }
+    setErrorMsg(null);
+    setIsAdding(true);
     try {
       await axios.post(
         `${API_BASE}/categories`,
         {
-          name: newCategory.name,
-          description: newCategory.description,
+          name: newCategory.name.trim(),
+          description: newCategory.description.trim(),
           parent: newCategory.parent || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -69,12 +82,17 @@ export default function CategoriesListPage() {
       fetchCategories();
     } catch (err) {
       console.error("Lỗi thêm:", err);
+      const axiosErr = err as AxiosError<{ error: string }>;
+      setErrorMsg(`Lỗi thêm danh mục: ${axiosErr.response?.data?.error || "Không rõ lỗi"}`);
+    } finally {
+      setIsAdding(false);
     }
   };
 
   // Xóa danh mục
   const handleDelete = async (id: string) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa?")) return;
+    if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return;
+    setErrorMsg(null);
     try {
       await axios.delete(`${API_BASE}/categories/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -82,6 +100,8 @@ export default function CategoriesListPage() {
       fetchCategories();
     } catch (err) {
       console.error("Lỗi xóa:", err);
+      const axiosErr = err as AxiosError<{ error: string }>;
+      setErrorMsg(`Lỗi xóa danh mục: ${axiosErr.response?.data?.error || "Không rõ lỗi"}`);
     }
   };
 
@@ -97,12 +117,18 @@ export default function CategoriesListPage() {
 
   // Lưu sửa
   const handleSave = async (id: string) => {
+    if (!editValues.name.trim()) {
+        setErrorMsg("Tên danh mục không được để trống.");
+        return;
+    }
+    setErrorMsg(null);
+    setIsSaving(true);
     try {
       await axios.put(
         `${API_BASE}/categories/${id}`,
         {
-          name: editValues.name,
-          description: editValues.description,
+          name: editValues.name.trim(),
+          description: editValues.description.trim(),
           parent: editValues.parent || null,
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -111,6 +137,10 @@ export default function CategoriesListPage() {
       fetchCategories();
     } catch (err) {
       console.error("Lỗi sửa:", err);
+      const axiosErr = err as AxiosError<{ error: string }>;
+      setErrorMsg(`Lỗi cập nhật danh mục: ${axiosErr.response?.data?.error || "Không rõ lỗi"}`);
+    } finally {
+        setIsSaving(false);
     }
   };
 
@@ -129,13 +159,27 @@ export default function CategoriesListPage() {
     return descendants;
   }, [categories]);
 
-  // Danh mục sau khi lọc (theo tên hoặc mô tả)
-  const filtered = categories.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      (c.description || "").toLowerCase().includes(search.toLowerCase())
-  );
+  // Danh mục sau khi lọc và sắp xếp
+  const filtered = useMemo(() => {
+    const searchTerm = search.toLowerCase();
+    return categories
+      .filter(
+        (c) =>
+          c.name.toLowerCase().includes(searchTerm) ||
+          (c.description || "").toLowerCase().includes(searchTerm)
+      )
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [categories, search]);
 
+  // Các danh mục hợp lệ để làm cha khi chỉnh sửa
+  const validParentCategories = useMemo(() => {
+    return categories.filter(p => {
+        // Không thể chọn chính nó hoặc hậu duệ của nó làm danh mục cha
+        const isEditingDescendant = editingId ? getDescendants(editingId).includes(p._id) : false;
+        return p._id !== editingId && !isEditingDescendant;
+    });
+  }, [categories, editingId, getDescendants]);
+  
   return (
     <SidebarLayout
       user={user ? { name: user.username, role: user.role } : null}
@@ -144,10 +188,15 @@ export default function CategoriesListPage() {
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-6">Quản lý danh mục sách</h1>
 
+        {errorMsg && <div className="p-3 mb-4 bg-red-100 text-red-700 rounded-md">{errorMsg}</div>}
+
         {/* Nút hiển thị form thêm */}
         {!showAddForm ? (
           <button
-            onClick={() => setShowAddForm(true)}
+            onClick={() => {
+              setShowAddForm(true);
+              setErrorMsg(null);
+            }}
             className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-1 mb-4"
           >
             <FiPlus /> Thêm danh mục
@@ -155,7 +204,7 @@ export default function CategoriesListPage() {
         ) : (
           <div className="border rounded p-4 mb-6 bg-gray-50">
             <h2 className="text-lg font-semibold mb-3">Thêm danh mục mới</h2>
-            <div className="flex gap-2 mb-3">
+            <div className="flex flex-col md:flex-row gap-2 mb-3">
               <input
                 type="text"
                 placeholder="Tên danh mục"
@@ -192,12 +241,16 @@ export default function CategoriesListPage() {
             <div className="flex gap-2">
               <button
                 onClick={handleAdd}
-                className="bg-blue-500 text-white px-4 py-2 rounded flex items-center gap-1"
+                className={`px-4 py-2 rounded flex items-center gap-1 ${isAdding ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 text-white"}`}
+                disabled={isAdding}
               >
-                <FiSave /> Lưu
+                <FiSave /> {isAdding ? "Đang thêm..." : "Lưu"}
               </button>
               <button
-                onClick={() => setShowAddForm(false)}
+                onClick={() => {
+                    setShowAddForm(false);
+                    setErrorMsg(null);
+                }}
                 className="bg-gray-300 text-black px-4 py-2 rounded flex items-center gap-1"
               >
                 <FiX /> Hủy
@@ -211,7 +264,7 @@ export default function CategoriesListPage() {
           <input
             type="text"
             placeholder="Tìm kiếm theo tên hoặc mô tả..."
-            className="border p-2 rounded w-1/3"
+            className="border p-2 rounded w-full md:w-1/3"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -220,20 +273,22 @@ export default function CategoriesListPage() {
         {/* Danh sách danh mục */}
         {loading ? (
           <p>Đang tải...</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-gray-500">Không tìm thấy danh mục nào.</p>
         ) : (
-          <table className="w-full border">
+          <table className="w-full border table-fixed">
             <thead>
               <tr className="bg-gray-100 text-left">
-                <th className="p-2 border">Tên</th>
-                <th className="p-2 border">Mô tả</th>
-                <th className="p-2 border">Danh mục cha</th>
-                <th className="p-2 border">Hành động</th>
+                <th className="p-2 border w-1/4">Tên</th>
+                <th className="p-2 border w-1/4">Mô tả</th>
+                <th className="p-2 border w-1/4">Danh mục cha</th>
+                <th className="p-2 border w-1/4">Hành động</th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((c) => (
                 <tr key={c._id}>
-                  <td className="p-2 border">
+                  <td className="p-2 border overflow-hidden text-ellipsis">
                     {editingId === c._id ? (
                       <input
                         value={editValues.name}
@@ -249,7 +304,7 @@ export default function CategoriesListPage() {
                       c.name
                     )}
                   </td>
-                  <td className="p-2 border">
+                  <td className="p-2 border overflow-hidden text-ellipsis">
                     {editingId === c._id ? (
                       <input
                         value={editValues.description}
@@ -278,13 +333,11 @@ export default function CategoriesListPage() {
                         }
                       >
                         <option value="">-- Không có danh mục cha --</option>
-                        {categories
-                          .filter((p) => p._id !== c._id && !getDescendants(c._id).includes(p._id))
-                          .map((p) => (
-                            <option key={p._id} value={p._id}>
-                              {p.name}
-                            </option>
-                          ))}
+                        {validParentCategories.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.name}
+                          </option>
+                        ))}
                       </select>
                     ) : (
                       c.parent?.name || "-"
@@ -294,14 +347,18 @@ export default function CategoriesListPage() {
                     {editingId === c._id ? (
                       <>
                         <button
-                          className="text-blue-600 flex items-center gap-1"
+                          className={`text-blue-600 flex items-center gap-1 ${isSaving ? "opacity-50 cursor-not-allowed" : ""}`}
                           onClick={() => handleSave(c._id)}
+                          disabled={isSaving}
                         >
-                          <FiSave /> Lưu
+                          <FiSave /> {isSaving ? "Lưu..." : "Lưu"}
                         </button>
                         <button
                           className="text-gray-600 flex items-center gap-1"
-                          onClick={() => setEditingId(null)}
+                          onClick={() => {
+                            setEditingId(null);
+                            setErrorMsg(null);
+                          }}
                         >
                           <FiX /> Hủy
                         </button>

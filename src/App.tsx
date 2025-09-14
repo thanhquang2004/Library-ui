@@ -16,7 +16,7 @@ import MemberManagementPage from "./pages/MemberManagementPage";
 import UserDetailPage from "./components/UserDetailPage";
 import RulesPage from "./pages/RulesPage";
 import SystemSettingsPage from "./pages/SystemSettingsPage";
-import StatisticsPage from "./pages/StatisticsPage";
+import ACtivitiesLogPage from "./pages/ActivitiesLogPage";
 import LibraryManagementPage from "./pages/ResourceManagementPage.tsx";
 import BookManagementPage from "./pages/BookManagementPage";
 import AuthorManagementPage from "./pages/AuthorManagementPage.tsx";
@@ -191,10 +191,10 @@ function App() {
           />
 
           <Route
-            path="/statistics"
+            path="/activities-log"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <StatisticsPage />
+                <ACtivitiesLogPage />
               </ProtectedRoute>
             }
           />
