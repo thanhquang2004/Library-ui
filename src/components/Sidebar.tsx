@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
   FaHome, FaBook, FaChartBar, FaQuestionCircle, 
-  FaUserCircle, FaUserPlus, FaBars, FaCog, FaGavel 
+  FaUserCircle, FaUserPlus, FaBars, FaCog, FaGavel, FaExchangeAlt
 } from "react-icons/fa";
 import Skeleton_ui from "./Skeleton.tsx";
 import { useNavigate } from "react-router-dom";
@@ -114,8 +114,23 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
             {user && (user.role === "admin" || user.role === "librarian") && (
               <NavItem icon={<FaBook />} label="Thư Viện" onClick={() => navigate("/library-management")} />
             )}
+            {user && (user.role === "admin" || user.role === "librarian") && (
+            <NavItem icon={<FaExchangeAlt />} label="Quản lý mượn trả" onClick={() => navigate("/borrow-return")} />
+            
+  )}
+            
+            {user && (user.role === "admin" || user.role === "librarian") && (
+  <NavItem
+    icon={<FaChartBar />}
+    label="Báo cáo & Thống kê"
+    onClick={() => navigate("/reports")}
+  />
+)}
+
+
+
             {user && user.role === "admin" && (
-              <NavItem icon={<FaChartBar />} label="Thống kê" onClick={() => navigate("/statistics")} />
+              <NavItem icon={<FaChartBar />} label="Nhật ký" onClick={() => navigate("/activities-log")} />
             )}
             {user && (user.role === "admin" || user.role === "librarian") && (
               <NavItem icon={<FaUserCircle />} label="Quản lý thành viên" onClick={() => navigate("/management_member")} />

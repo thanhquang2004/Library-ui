@@ -16,7 +16,7 @@ import MemberManagementPage from "./pages/MemberManagementPage";
 import UserDetailPage from "./components/UserDetailPage";
 import RulesPage from "./pages/RulesPage";
 import SystemSettingsPage from "./pages/SystemSettingsPage";
-import StatisticsPage from "./pages/StatisticsPage";
+import ACtivitiesLogPage from "./pages/ActivitiesLogPage";
 import LibraryManagementPage from "./pages/ResourceManagementPage.tsx";
 import BookManagementPage from "./pages/BookManagementPage";
 import AuthorManagementPage from "./pages/AuthorManagementPage.tsx";
@@ -24,6 +24,9 @@ import RackManagementPage from "./pages/RackManagementPage.tsx";
 import BookItemManagementPage from "./pages/BookItemManagementPage.tsx";
 import CategoriesListPage from "./pages/CategoriesListPage.tsx";
 import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
+import BorrowReturnPage from "./pages/BorrowReturnPage.tsx";
+import ReportPage from "./pages/ReportPage.tsx";
+
 
 
 function App() {
@@ -188,13 +191,31 @@ function App() {
           />
 
           <Route
-            path="/statistics"
+            path="/activities-log"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <StatisticsPage />
+                <ACtivitiesLogPage />
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/borrow-return"
+            element={
+              <ProtectedRoute allowedRoles={["admin" , "librarian"]}>
+                <BorrowReturnPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute allowedRoles={["admin" , "librarian"]}>
+                <ReportPage />
+              </ProtectedRoute>
+            }
+          />
+          
           
 
         </Routes>

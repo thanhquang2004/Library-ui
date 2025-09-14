@@ -5,8 +5,8 @@ import axios from "axios";
 import Skeleton_ui from "../components/Skeleton";
 import { Link } from "react-router-dom";
 import { FiLock, FiUnlock, FiTrash2, FiEdit2 } from "react-icons/fi";
+import api from "../api";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
 
 interface UserItem {
   _id: string;
@@ -50,8 +50,8 @@ const MemberManagementPage: React.FC = () => {
     setError(null);
 
     try {
-      const res = await axios.get(`${API_BASE}/users`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await api.get(`/users`, {
+        
         params: {
           page: currentPage,
           limit: itemsPerPage,
@@ -90,10 +90,10 @@ const MemberManagementPage: React.FC = () => {
   /* ================= ACTIONS ================= */
   const toggleStatus = async (userId: string) => {
     try {
-      await axios.put(
-        `${API_BASE}/users/${userId}/toggle-status`,
+      await api.put(
+        `/users/${userId}/toggle-status`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {  }
       );
       fetchUsers();
     } catch (err) {
@@ -104,8 +104,8 @@ const MemberManagementPage: React.FC = () => {
   const deleteUser = async (userId: string) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
     try {
-      await axios.delete(`${API_BASE}/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await api.delete(`/users/${userId}`, {
+       
       });
       fetchUsers();
     } catch (err) {
@@ -147,10 +147,10 @@ const MemberManagementPage: React.FC = () => {
     }
 
     try {
-      await axios.put(
-        `${API_BASE}/users/${editingUser._id}/byAdmin`,
+      await api.put(
+        `/users/${editingUser._id}/byAdmin`,
         formData,
-        { headers: { Authorization: `Bearer ${token}` } }
+        {  }
       );
       alert("Cập nhật thành công!");
       setEditingUser(null);

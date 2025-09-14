@@ -1,11 +1,11 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
-import axios, { AxiosError } from "axios";
+// src/pages/AuthorManagementPage.tsx
+import { useEffect, useState, useCallback, } from "react";
+import { AxiosError } from "axios";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaSync } from "react-icons/fa";
 import SidebarLayout from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 import { Virtuoso } from "react-virtuoso";
-
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api, { apiNoAuth } from "../api"; // Import cả api và apiNoAuth
 
 interface Author {
   authorId: string;
@@ -28,11 +28,6 @@ export default function AuthorManagementPage() {
   const [formData, setFormData] = useState<Partial<Author>>({});
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const authHeader = useMemo(
-    () => (token ? { Authorization: `Bearer ${token}` } : undefined),
-    [token]
-  );
-
   const formatDate = (isoDate?: string) => {
     if (!isoDate) return "";
     const date = new Date(isoDate);
@@ -41,22 +36,24 @@ export default function AuthorManagementPage() {
   };
 
   const loadData = useCallback(async (searchName: string = "") => {
-    if (!token) return;
     setLoading(true);
     try {
       const trimmedQuery = searchName.trim();
-      let url = `${API_BASE}/author`; // 🔹 Đã sửa để khớp với backend
-      let params = {};
+      let res;
 
       if (trimmedQuery.length > 0) {
-        url = `${API_BASE}/author/search`; // 🔹 Đây là API riêng nên không sửa
-        params = { name: trimmedQuery };
+        // Sử dụng apiNoAuth cho tìm kiếm
+        res = await apiNoAuth.get<Author[]>("/author/search", { 
+          params: { name: trimmedQuery },
+        });
+      } else {
+        // Sử dụng api cho lấy toàn bộ danh sách (cần token)
+        if (!token) {
+          setAuthors([]);
+          return;
+        }
+        res = await api.get<Author[]>("/author");
       }
-
-      const res = await axios.get<Author[]>(url, {
-        headers: authHeader,
-        params,
-      });
       setAuthors(res.data);
     } catch (err) {
       console.error("Lỗi khi tải tác giả:", err);
@@ -64,10 +61,10 @@ export default function AuthorManagementPage() {
     } finally {
       setLoading(false);
     }
-  }, [token, authHeader]);
+  }, [token]);
 
   useEffect(() => {
-    if (token && !authLoading) {
+    if (!authLoading) {
       const timer = setTimeout(() => {
         loadData(query);
       }, 500);
@@ -78,9 +75,7 @@ export default function AuthorManagementPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Bạn có chắc muốn xóa tác giả này?")) return;
     try {
-      await axios.delete(`${API_BASE}/author/${id}`, { // 🔹 Đã sửa để khớp với backend
-        headers: authHeader,
-      });
+      await api.delete(`/author/${id}`); 
       setAuthors((prev) => prev.filter((a) => a.authorId !== id));
     } catch (err) {
       console.error("Lỗi khi xóa tác giả", err);
@@ -106,14 +101,11 @@ export default function AuthorManagementPage() {
       };
 
       if (showModal === "create") {
-        await axios.post(`${API_BASE}/author`, payload, { // 🔹 Đã sửa để khớp với backend
-          headers: authHeader,
-        });
+        await api.post("/author", payload); 
       } else if (showModal === "edit" && selectedAuthor) {
-        await axios.put(
-          `${API_BASE}/author/${selectedAuthor.authorId}`, // 🔹 Đã sửa để khớp với backend
-          payload,
-          { headers: authHeader }
+        await api.put(
+          `/author/${selectedAuthor.authorId}`,
+          payload
         );
       }
 

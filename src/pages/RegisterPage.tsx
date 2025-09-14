@@ -4,7 +4,7 @@ import axios from "axios";
 import RegisterForm from "../components/RegisterForm";
 import { useAuth } from "../context/AuthContext";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from "../api";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,7 +42,7 @@ const RegisterPage: React.FC = () => {
   // Check email exists by calling API
   const checkEmailExists = async (email: string) => {
     try {
-      const res = await axios.post(`${API_BASE}/auth/check-email`, { email });
+      const res = await api.post(`/auth/check-email`, { email });
       return res.data.exists; // backend trả về { exists: true/false }
     } catch {
       return false; // Nếu lỗi thì coi như không tồn tại
@@ -105,8 +105,8 @@ const RegisterPage: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await axios.post(`${API_BASE}/auth/register`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await api.post(`/auth/register`, payload, {
+        
       });
 
       if (res.status === 201 && res.data.success) {
