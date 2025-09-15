@@ -225,20 +225,6 @@ export default function BookManagementPage() {
                       >
                         Xem
                       </button>
-                      <button
-                        className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-                        onClick={() => {
-                          setFormData({
-                            ...b,
-                            categories: b.categories || [],
-                            authors: b.authors || [],
-                          });
-                          setSelectedBook(b);
-                          setShowModal("edit");
-                        }}
-                      >
-                        Sửa
-                      </button>
                     </div>
                   </div>
                 );
