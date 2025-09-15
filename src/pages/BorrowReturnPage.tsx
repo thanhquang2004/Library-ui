@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import api from "../api";
 import { useAuth } from "../context/AuthContext";
-import SidebarLayout from "../components/Sidebar"; // 👈 import SidebarLayout
+import SidebarLayout from "../components/Sidebar";
 
 
 interface Lending {
@@ -23,10 +23,10 @@ interface Lending {
 }
 
 const BorrowReturnPage: React.FC = () => {
-    const {  user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [lendings, setLendings] = useState<Lending[]>([]);
-  const [loading, setLoading, ] = useState(false);
+  const [loading, setLoading,] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   const [memberId, setMemberId] = useState("");
   const [selected, setSelected] = useState<Lending | null>(null);
@@ -41,6 +41,7 @@ const BorrowReturnPage: React.FC = () => {
           memberId: memberId || undefined,
         },
       });
+      console.log(res.data);
       setLendings(res.data);
     } catch (err) {
       console.error("Error fetching lendings:", err);
@@ -86,7 +87,7 @@ const BorrowReturnPage: React.FC = () => {
 
   return (
     <SidebarLayout user={user ? { name: user.username, role: user.role } : null}
-    isLoading={authLoading}>
+      isLoading={authLoading}>
       <div className="p-8 bg-gradient-to-br from-gray-50 to-green-50 min-h-screen">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">
@@ -106,11 +107,10 @@ const BorrowReturnPage: React.FC = () => {
           <button
             onClick={createLending}
             disabled={!user || (user.role !== "librarian" && user.role !== "admin")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow ${
-              user && (user.role === "librarian" || user.role === "admin")
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow ${user && (user.role === "librarian" || user.role === "admin")
                 ? "bg-blue-600 text-white hover:bg-blue-700"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+              }`}
           >
             <FaPlus /> Tạo phiếu mượn
           </button>
@@ -219,19 +219,18 @@ const BorrowReturnPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          l.status === "borrowing"
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${l.status === "borrowing"
                             ? "bg-yellow-100 text-yellow-800"
                             : l.status === "returned"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {l.status === "borrowing"
                           ? "Đang mượn"
                           : l.status === "returned"
-                          ? "Đã trả"
-                          : "Quá hạn"}
+                            ? "Đã trả"
+                            : "Quá hạn"}
                       </span>
                     </td>
                     <td className="px-6 py-4 flex gap-2">
@@ -286,8 +285,8 @@ const BorrowReturnPage: React.FC = () => {
               {selected.status === "borrowing"
                 ? "Đang mượn"
                 : selected.status === "returned"
-                ? "Đã trả"
-                : "Quá hạn"}
+                  ? "Đã trả"
+                  : "Quá hạn"}
             </p>
           </div>
         )}
