@@ -24,10 +24,10 @@ import RackManagementPage from "./pages/RackManagementPage.tsx";
 import BookItemManagementPage from "./pages/BookItemManagementPage.tsx";
 import CategoriesListPage from "./pages/CategoriesListPage.tsx";
 import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
-import BorrowReturnPage from "./pages/BorrowReturnPage.tsx";
 import ReportPage from "./pages/ReportPage.tsx";
-
-
+import LendingManagementPage from "./pages/LendingManagement.tsx";
+import FineManagementPage from "./pages/FineManagementPage.tsx";
+import LoanHistoryPage from "./pages/LoanHistoryPage";
 
 function App() {
   return (
@@ -38,7 +38,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
-          
+
           {/* Yêu cầu đăng nhập */}
           <Route
             path="/"
@@ -68,10 +68,10 @@ function App() {
             }
           />
 
-          
-          
-          
-          
+
+
+
+
 
           {/* Quản lý Thư viện: chỉ admin hoặc librarian */}
           <Route
@@ -98,11 +98,11 @@ function App() {
               </ProtectedRoute>
             }
           />
-            <Route
+          <Route
             path="/racks-list"
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
-                <RackManagementPage/>
+                <RackManagementPage />
               </ProtectedRoute>
             }
           />
@@ -110,7 +110,7 @@ function App() {
             path="/bookitems-list"
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
-                <BookItemManagementPage/>
+                <BookItemManagementPage />
               </ProtectedRoute>
             }
           />
@@ -119,7 +119,7 @@ function App() {
             path="/categories-list"
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
-                <CategoriesListPage/>
+                <CategoriesListPage />
               </ProtectedRoute>
             }
           />
@@ -127,7 +127,7 @@ function App() {
             path="/borrowcards-list"
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
-                <LibraryCardManagementPage/>
+                <LibraryCardManagementPage />
               </ProtectedRoute>
             }
           />
@@ -158,7 +158,7 @@ function App() {
             path="/management_member"
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
-                <MemberManagementPage/>
+                <MemberManagementPage />
               </ProtectedRoute>
             }
           />
@@ -198,25 +198,40 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
+
           <Route
-            path="/borrow-return"
+            path="/lending-management"
             element={
-              <ProtectedRoute allowedRoles={["admin" , "librarian"]}>
-                <BorrowReturnPage />
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <LendingManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fine-management"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <FineManagementPage />
               </ProtectedRoute>
             }
           />
           <Route
             path="/reports"
             element={
-              <ProtectedRoute allowedRoles={["admin" , "librarian"]}>
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
                 <ReportPage />
               </ProtectedRoute>
             }
           />
-          
-          
+          <Route
+            path="/loan-history"
+            element={
+              <ProtectedRoute allowedRoles={["member"]}>
+                <LoanHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+
 
         </Routes>
       </Router>

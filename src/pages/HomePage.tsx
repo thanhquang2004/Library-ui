@@ -16,7 +16,7 @@ import { useAuth } from "../context/AuthContext";
 import SidebarLayout from "../components/Sidebar";
 import CustomBar from "../components/CustomBar";
 import Skeleton from "../components/Skeleton";
-import DashboardPage from "./DashboardPage";
+// import DashboardPage from "./DashboardPage";
 import api from "../api";
 
 // ================== Types ==================
@@ -108,7 +108,7 @@ const HomePage: React.FC = () => {
       }
       userMap[userId].actionCount++;
     }
-    
+
     const results: ChartData[] = Object.entries(userMap).map(
       ([userId, { name, actionCount }]) => {
         return {
@@ -120,7 +120,7 @@ const HomePage: React.FC = () => {
     );
     setChartData(results);
   };
-  
+
   const prettyDetails = (d: AuditDetails): string => {
     if (d == null) return "";
     return typeof d === "string" ? d : JSON.stringify(d, null, 2);
@@ -142,7 +142,7 @@ const HomePage: React.FC = () => {
       const chartRes = await api.get<ApiEnvelope<AuditLogsResponse>>(
         `/audit-logs`,
         {
-          params: { startDate, model: model }, 
+          params: { startDate, model: model },
         }
       );
       processDataForChart(chartRes.data?.data?.auditLogs || []);
@@ -165,9 +165,9 @@ const HomePage: React.FC = () => {
       setChartData([]);
       setPaginatedLogs([]);
       if (err.response?.status === 429) {
-          setError("Tải dữ liệu thất bại: Vượt quá giới hạn yêu cầu. Vui lòng thử lại sau.");
+        setError("Tải dữ liệu thất bại: Vượt quá giới hạn yêu cầu. Vui lòng thử lại sau.");
       } else {
-          setError("Không thể tải dữ liệu.");
+        setError("Không thể tải dữ liệu.");
       }
     } finally {
       setLoading(false);
@@ -199,12 +199,6 @@ const HomePage: React.FC = () => {
           </p>
         </div>
 
-
-        {user?.role === "librarian" && (
-          <div className="mt-6">
-            <DashboardPage />
-          </div>
-        )} 
 
         {canViewChart && (
           <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
@@ -278,67 +272,67 @@ const HomePage: React.FC = () => {
         )}
 
         {canViewChart && (
-            <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
-                <h2 className="text-2xl font-bold text-blue-600 mb-4">
-                  📋 Hoạt động chi tiết
-                </h2>
-                {loadingTable ? (
-                    <p>⏳ Đang tải dữ liệu chi tiết...</p>
-                ) : paginatedLogs.length === 0 ? (
-                    <p className="text-gray-500">Không có dữ liệu</p>
-                ) : (
-                    <>
-                    <table className="min-w-full border border-gray-200 mb-6">
-                        <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border px-4 py-2">Tên</th>
-                            <th className="border px-4 py-2">Hành động</th>
-                            <th className="border px-4 py-2">Model</th>
-                            
-                            <th className="border px-4 py-2">Chi tiết</th>
-                            <th className="border px-4 py-2">Thời gian</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {paginatedLogs.map((log, index) => (
-                            <tr key={index} className="hover:bg-gray-50">
-                            <td className="border px-4 py-2">{log.user?.username || log.user?.name || 'N/A'}</td>
-                            <td className="border px-4 py-2">{log.action || 'N/A'}</td>
-                            <td className="border px-4 py-2">{log.target?.model || 'N/A'}</td>
-                            
-                            <td className="border px-4 py-2 whitespace-pre-wrap">
-                                {prettyDetails(log.details)}
-                            </td>
-                            <td className="border px-4 py-2">
-                                {new Date(log.timestamp).toLocaleString("vi-VN", { dateStyle: 'short' })}
-                            </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+          <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
+            <h2 className="text-2xl font-bold text-blue-600 mb-4">
+              📋 Hoạt động chi tiết
+            </h2>
+            {loadingTable ? (
+              <p>⏳ Đang tải dữ liệu chi tiết...</p>
+            ) : paginatedLogs.length === 0 ? (
+              <p className="text-gray-500">Không có dữ liệu</p>
+            ) : (
+              <>
+                <table className="min-w-full border border-gray-200 mb-6">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border px-4 py-2">Tên</th>
+                      <th className="border px-4 py-2">Hành động</th>
+                      <th className="border px-4 py-2">Model</th>
 
-                    <div className="flex justify-between items-center mb-4">
-                        <button
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentPage === 1 || loadingTable}
-                        className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
-                        >
-                        Trang trước
-                        </button>
-                        <span>
-                        Trang {currentPage} trên {totalPages}
-                        </span>
-                        <button
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                        disabled={currentPage === totalPages || loadingTable}
-                        className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
-                        >
-                        Trang sau
-                        </button>
-                    </div>
-                    </>
-                )}
-            </div>
+                      <th className="border px-4 py-2">Chi tiết</th>
+                      <th className="border px-4 py-2">Thời gian</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedLogs.map((log, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="border px-4 py-2">{log.user?.username || log.user?.name || 'N/A'}</td>
+                        <td className="border px-4 py-2">{log.action || 'N/A'}</td>
+                        <td className="border px-4 py-2">{log.target?.model || 'N/A'}</td>
+
+                        <td className="border px-4 py-2 whitespace-pre-wrap">
+                          {prettyDetails(log.details)}
+                        </td>
+                        <td className="border px-4 py-2">
+                          {new Date(log.timestamp).toLocaleString("vi-VN", { dateStyle: 'short' })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className="flex justify-between items-center mb-4">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1 || loadingTable}
+                    className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+                  >
+                    Trang trước
+                  </button>
+                  <span>
+                    Trang {currentPage} trên {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages || loadingTable}
+                    className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+                  >
+                    Trang sau
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
     </SidebarLayout>

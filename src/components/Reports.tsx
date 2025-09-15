@@ -1,5 +1,5 @@
 // import React from "react";
-import { FaChartBar, FaDownload,  FaFilter,  FaBook, FaUsers, FaClock, FaEye } from "react-icons/fa";
+import { FaChartBar, FaDownload, FaFilter, FaBook, FaUsers, FaClock } from "react-icons/fa";
 
 const Reports: React.FC = () => {
   return (
@@ -27,7 +27,7 @@ const Reports: React.FC = () => {
               <option>Hôm nay</option>
               <option>Tùy chỉnh</option>
             </select>
-            
+
             <select className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
               <option>Tất cả loại báo cáo</option>
               <option>Mượn/trả sách</option>
@@ -40,7 +40,7 @@ const Reports: React.FC = () => {
               Lọc nâng cao
             </button>
           </div>
-          
+
           <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 shadow-lg">
             <FaDownload className="text-sm" />
             Xuất báo cáo
@@ -56,7 +56,7 @@ const Reports: React.FC = () => {
               <p className="text-gray-600 text-sm font-medium">Lượt mượn tháng này</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">1,247</p>
               <div className="flex items-center gap-1 mt-1">
-                
+
                 <p className="text-green-600 text-xs">↗ +15% so với T.trước</p>
               </div>
             </div>
@@ -72,7 +72,7 @@ const Reports: React.FC = () => {
               <p className="text-gray-600 text-sm font-medium">Độc giả hoạt động</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">847</p>
               <div className="flex items-center gap-1 mt-1">
-                
+
                 <p className="text-green-600 text-xs">↗ +8% so với T.trước</p>
               </div>
             </div>
@@ -88,7 +88,7 @@ const Reports: React.FC = () => {
               <p className="text-gray-600 text-sm font-medium">Sách quá hạn</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">45</p>
               <div className="flex items-center gap-1 mt-1">
-                
+
                 <p className="text-red-600 text-xs">↗ +3 so với tuần trước</p>
               </div>
             </div>
@@ -104,7 +104,7 @@ const Reports: React.FC = () => {
               <p className="text-gray-600 text-sm font-medium">Tỷ lệ trả đúng hạn</p>
               <p className="text-2xl font-bold text-gray-800 mt-1">92%</p>
               <div className="flex items-center gap-1 mt-1">
-                
+
                 <p className="text-green-600 text-xs">↗ +2% so với T.trước</p>
               </div>
             </div>
@@ -121,7 +121,7 @@ const Reports: React.FC = () => {
           <div className="p-6 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-800">Sách được mượn nhiều nhất</h3>
           </div>
-          
+
           <div className="p-6">
             <div className="space-y-4">
               {[
@@ -133,12 +133,11 @@ const Reports: React.FC = () => {
               ].map((book, index) => (
                 <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-150">
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white ${
-                      index === 0 ? 'bg-yellow-500' :
-                      index === 1 ? 'bg-gray-400' :
-                      index === 2 ? 'bg-orange-400' :
-                      'bg-blue-500'
-                    }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-white ${index === 0 ? 'bg-yellow-500' :
+                        index === 1 ? 'bg-gray-400' :
+                          index === 2 ? 'bg-orange-400' :
+                            'bg-blue-500'
+                      }`}>
                       {index + 1}
                     </div>
                     <div>
@@ -161,14 +160,14 @@ const Reports: React.FC = () => {
           <div className="p-6 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-800">Xu hướng mượn sách</h3>
           </div>
-          
+
           <div className="p-6">
             {/* Simulated Chart Area */}
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 mb-6">
               <div className="flex items-end justify-between h-32">
                 {[25, 45, 35, 55, 40, 60, 50].map((height, index) => (
                   <div key={index} className="flex flex-col items-center gap-2">
-                    <div 
+                    <div
                       className="w-8 bg-gradient-to-t from-indigo-500 to-purple-500 rounded-t-lg"
                       style={{ height: `${height}%` }}
                     ></div>
@@ -197,7 +196,7 @@ const Reports: React.FC = () => {
         <div className="p-6 border-b border-gray-100">
           <h3 className="text-lg font-semibold text-gray-800">Thống kê theo danh mục</h3>
         </div>
-        
+
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
@@ -207,18 +206,16 @@ const Reports: React.FC = () => {
               { category: 'Khoa học', books: 278, borrows: 341, color: 'orange' },
             ].map((cat, index) => (
               <div key={index} className="text-center p-6 bg-gray-50 rounded-2xl hover:shadow-md transition-shadow duration-200">
-                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
-                  cat.color === 'blue' ? 'bg-blue-100' :
-                  cat.color === 'green' ? 'bg-green-100' :
-                  cat.color === 'purple' ? 'bg-purple-100' :
-                  'bg-orange-100'
-                }`}>
-                  <FaBook className={`text-2xl ${
-                    cat.color === 'blue' ? 'text-blue-600' :
-                    cat.color === 'green' ? 'text-green-600' :
-                    cat.color === 'purple' ? 'text-purple-600' :
-                    'text-orange-600'
-                  }`} />
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${cat.color === 'blue' ? 'bg-blue-100' :
+                    cat.color === 'green' ? 'bg-green-100' :
+                      cat.color === 'purple' ? 'bg-purple-100' :
+                        'bg-orange-100'
+                  }`}>
+                  <FaBook className={`text-2xl ${cat.color === 'blue' ? 'text-blue-600' :
+                      cat.color === 'green' ? 'text-green-600' :
+                        cat.color === 'purple' ? 'text-purple-600' :
+                          'text-orange-600'
+                    }`} />
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">{cat.category}</h4>
                 <div className="space-y-1">
@@ -231,51 +228,8 @@ const Reports: React.FC = () => {
         </div>
       </div>
 
-      {/* Recent Activities */}
-      <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800">Hoạt động gần đây</h3>
-        </div>
-        
-        <div className="p-6">
-          <div className="space-y-4">
-            {[
-              { action: 'Mượn sách', user: 'Nguyễn Văn A', book: 'Lập trình Python', time: '5 phút trước' },
-              { action: 'Trả sách', user: 'Trần Thị B', book: 'Web Development', time: '12 phút trước' },
-              { action: 'Gia hạn', user: 'Lê Văn C', book: 'Machine Learning', time: '25 phút trước' },
-              { action: 'Thanh toán phí', user: 'Phạm Thị D', book: 'Database Design', time: '1 giờ trước' },
-              { action: 'Đăng ký mới', user: 'Hoàng Văn E', book: '', time: '2 giờ trước' },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-150">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  activity.action === 'Mượn sách' ? 'bg-blue-100 text-blue-600' :
-                  activity.action === 'Trả sách' ? 'bg-green-100 text-green-600' :
-                  activity.action === 'Gia hạn' ? 'bg-orange-100 text-orange-600' :
-                  activity.action === 'Thanh toán phí' ? 'bg-yellow-100 text-yellow-600' :
-                  'bg-purple-100 text-purple-600'
-                }`}>
-                  {activity.action === 'Mượn sách' ? '📚' : 
-                   activity.action === 'Trả sách' ? '✅' :
-                   activity.action === 'Gia hạn' ? '🔄' :
-                   activity.action === 'Thanh toán phí' ? '💰' : '👤'}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-800">
-                    <span className="font-semibold">{activity.user}</span> {activity.action.toLowerCase()}
-                    {activity.book && <span className="font-semibold"> "{activity.book}"</span>}
-                  </p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
-                </div>
-                <FaEye className="text-gray-400 hover:text-gray-600 cursor-pointer" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
 
 export default Reports;
-
-
