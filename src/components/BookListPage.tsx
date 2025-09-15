@@ -52,6 +52,7 @@ export default function BookManagementPage() {
 
   const formatDate = (isoDate: string) => {
     const date = new Date(isoDate);
+    setQuery("");
     if (isNaN(date.getTime())) return isoDate;
     return date.toLocaleDateString("vi-VN");
   };
