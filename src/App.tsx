@@ -26,8 +26,8 @@ import CategoriesListPage from "./pages/CategoriesListPage.tsx";
 import LibraryCardManagementPage from "./pages/LibraryCardManagementPage.tsx";
 import ReportPage from "./pages/ReportPage.tsx";
 import LendingManagementPage from "./pages/LendingManagement.tsx";
-
-
+import FineManagementPage from "./pages/FineManagementPage.tsx";
+import LoanHistoryPage from "./pages/LoanHistoryPage";
 
 function App() {
   return (
@@ -200,10 +200,18 @@ function App() {
           />
 
           <Route
-            path="/borrow-return"
+            path="/lending-management"
             element={
               <ProtectedRoute allowedRoles={["admin", "librarian"]}>
                 <LendingManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fine-management"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "librarian"]}>
+                <FineManagementPage />
               </ProtectedRoute>
             }
           />
@@ -215,7 +223,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          <Route
+            path="/loan-history"
+            element={
+              <ProtectedRoute allowedRoles={["member"]}>
+                <LoanHistoryPage />
+              </ProtectedRoute>
+            }
+          />
 
 
         </Routes>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
-  FaHome, FaBook, FaChartBar, FaQuestionCircle,
-  FaUserCircle, FaUserPlus, FaBars, FaCog, FaGavel, FaExchangeAlt
+  FaHome, FaBook, FaChartBar,
+  FaUserCircle, FaUserPlus, FaBars, FaGavel, FaExchangeAlt, FaHistory
 } from "react-icons/fa";
 import Skeleton_ui from "./Skeleton.tsx";
 import { useNavigate } from "react-router-dom";
@@ -34,27 +34,12 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [logo, setLogo] = useState<string | null>(null);
+
 
   const sidebarWidth = 256;
 
   // Load logo từ localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("system_settings");
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setLogo(parsed.logo || null);
-    }
 
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "system_settings" && e.newValue) {
-        const parsed = JSON.parse(e.newValue);
-        setLogo(parsed.logo || null);
-      }
-    };
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
 
   // Detect screen resize
   useEffect(() => {
@@ -89,11 +74,7 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
       >
         {/* Header: Logo + Toggle */}
         <div className="flex items-center justify-between text-xl font-bold p-4 border-b border-gray-200">
-          {logo ? (
-            <img src={logo} alt="Library Logo" className="h-10 object-contain" />
-          ) : (
-            <img src="../public/image.png" alt="Default Logo" className="h-10 object-contain" />
-          )}
+          <span className="text-[30px]">Library</span>
           {isMobile && (
             <button
               onClick={() => setSidebarOpen(false)}
@@ -106,16 +87,18 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
 
         {/* Nav */}
         <nav className="flex-1 mt-4">
-          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            Menu chính
-          </p>
+
           <ul className="space-y-1">
             <NavItem icon={<FaHome />} label="Trang Chủ" onClick={() => navigate("/")} />
             {user && (user.role === "admin" || user.role === "librarian") && (
               <NavItem icon={<FaBook />} label="Thư Viện" onClick={() => navigate("/library-management")} />
             )}
             {user && (user.role === "admin" || user.role === "librarian") && (
-              <NavItem icon={<FaExchangeAlt />} label="Quản lý mượn trả" onClick={() => navigate("/borrow-return")} />
+              <NavItem icon={<FaExchangeAlt />} label="Quản lý mượn trả" onClick={() => navigate("/lending-management")} />
+
+            )}
+            {user && (user.role === "admin" || user.role === "librarian") && (
+              <NavItem icon={<FaExchangeAlt />} label="Quản lý khoản phạt" onClick={() => navigate("/fine-management")} />
 
             )}
 
@@ -142,18 +125,14 @@ const SidebarLayout: React.FC<SidebarProps> = ({ user, isLoading, children }) =>
             {user && (
               <NavItem icon={<FaGavel />} label="Quy định" onClick={() => navigate("/rules")} />
             )}
-            {user && user.role === "admin" && (
-              <NavItem icon={<FaCog />} label="Cài đặt hệ thống" onClick={() => navigate("/system-settings")} />
+            {user && user.role === "member" && (
+              <NavItem icon={<FaHistory />} label="Lịch sử mượn sách" onClick={() => navigate("/loan-history")} />
             )}
+
           </ul>
 
 
-          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 mt-6">
-            Liên hệ hỗ trợ
-          </p>
-          <ul className="space-y-1">
-            <NavItem icon={<FaQuestionCircle />} label="Trợ giúp" />
-          </ul>
+
         </nav>
 
         {/* User */}

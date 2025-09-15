@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import  { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { Virtuoso } from "react-virtuoso";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye, FaSync } from "react-icons/fa";
 
@@ -94,7 +94,7 @@ interface GetByBarcodeResponse {
 
 export default function BookItemManagementPage() {
   const { token, user, loading: authLoading } = useAuth();
-  
+
   const [items, setItems] = useState<BookItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page] = useState(1);
@@ -282,14 +282,14 @@ export default function BookItemManagementPage() {
         alert("Bạn chưa đăng nhập");
         return;
       }
-  
+
       console.log("Changing status", id, next);
-  
+
       const res = await api.put<UpdateStatusResponse>(
         `/book-items/${id}/status`,
         { status: next }
       );
-  
+
       console.log(res.data);
       await loadData();
     } catch (e) {
@@ -341,18 +341,18 @@ export default function BookItemManagementPage() {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           {user?.role === "librarian" && (
-          <input
-            className="border rounded p-2 flex-1 min-w-[240px]"
-            placeholder="Tìm barcode / tiêu đề / ISBN / mã kệ..."
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
+            <input
+              className="border rounded p-2 flex-1 min-w-[240px]"
+              placeholder="Tìm barcode / tiêu đề / ISBN / mã kệ..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
           )}
           {/* Filter trạng thái */}
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as ItemStatus | "")}
-            
+
             className="border rounded p-2"
           >
             <option value="">Tất cả trạng thái</option>
@@ -360,14 +360,14 @@ export default function BookItemManagementPage() {
             <option value="loaned">loaned</option>
             <option value="reserved">reserved</option>
           </select>
-            {user?.role === "librarian" && (
-          <button
-            className="px-3 py-2 bg-blue-600 text-white rounded flex items-center gap-2"
-            onClick={searchBarcode}
-          >
-            <FaSearch /> Tìm
-          </button>
-            )}
+          {user?.role === "librarian" && (
+            <button
+              className="px-3 py-2 bg-blue-600 text-white rounded flex items-center gap-2"
+              onClick={searchBarcode}
+            >
+              <FaSearch /> Tìm
+            </button>
+          )}
         </div>
 
         {/* Header */}
