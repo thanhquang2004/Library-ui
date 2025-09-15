@@ -61,6 +61,14 @@ export default function LendingManagementPage() {
     newDueDate: "",
   });
 
+  const statusMap: Record<string, string> = {
+  borrowed: "Đã được mượn",
+  returned: "Sẵn sàng ",
+  overdue: "Quá hạn",
+};
+
+
+
   /** ================== LOAD DATA ================== */
   const loadLendings = useCallback(async () => {
     if (!token) return;
@@ -226,9 +234,9 @@ export default function LendingManagementPage() {
             className="border rounded p-2"
           >
             <option value="">Tất cả trạng thái</option>
-            <option value="borrowed">borrowed</option>
-            <option value="returned">returned</option>
-            <option value="overdue">overdue</option>
+            <option value="borrowed">Đã cho mượn</option>
+            <option value="returned">Đã được trả</option>
+            <option value="overdue">Quá hạn</option>
           </select>
           <button className="px-3 py-2 bg-blue-600 text-white rounded flex items-center gap-2" onClick={loadLendings}>
             <FaSearch /> Lọc
@@ -263,8 +271,12 @@ export default function LendingManagementPage() {
                 <div className="p-2">{l.bookItem ? `${l.bookItem.barcode} - ${l.bookItem.title || ""}` : "-"}</div>
                 <div className="p-2">{l.returnDate ? new Date(l.returnDate).toLocaleString() : "-"}</div>
                 <div className="p-2">{l.dueDate ? new Date(l.dueDate).toLocaleString() : "-"}</div>
-                <div className="p-2">{l.status}</div>
-                <div className="p-2">{l.bookItem?.price ? l.bookItem.price : "-"}</div>
+                <div className="p-2">{statusMap[l.status] || l.status}</div>
+                <div className="p-2">
+                  {l.bookItem?.price
+                    ? new Intl.NumberFormat("vi-VN", { style: "decimal" }).format(l.bookItem.price) + " VND"
+                    : "-"}
+                </div>
                 <div className="p-2 flex gap-2">
                   {l.status === "borrowed" && (
                     <>
@@ -288,13 +300,15 @@ export default function LendingManagementPage() {
                         </>
                       )}
                     </>
-                  )}
-                  <button
+                  )}{user?.role === "admin" && (
+                    <button
                     className="bg-red-500 px-2 py-1 rounded text-white"
                     onClick={() => handleDelete(l.lendingId)}
                   >
                     Xóa
                   </button>
+                  )
+                }
                 </div>
               </div>
             )}

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from "../context/AuthContext";
 import SidebarLayout from '../components/Sidebar';
 import MainContent from '../components/Maincontent';
-import axios from 'axios';
+
 
 interface UserData {
   userId: string;
@@ -16,7 +16,7 @@ interface UserData {
   language: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from '../api';
 
 const AccountPage = () => {
   const { user, token } = useAuth();
@@ -29,10 +29,8 @@ const AccountPage = () => {
     const fetchUserData = async () => {
       setIsLoading(true);
       try {
-        const res = await axios.get(`${API_BASE}/users/${user.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await api.get(`/users/${user.id}`, {
+      
         });
         setUserData(res.data.data);
       } catch (error) {

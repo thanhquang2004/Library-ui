@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import axios, { AxiosError } from "axios";
+import  { AxiosError } from "axios";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaEye } from "react-icons/fa";
 import SidebarLayout from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
 import { Virtuoso } from "react-virtuoso";
 import Select from "react-select";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from "../api";
 
 interface BookApi {
   _id: string;
@@ -67,8 +67,8 @@ export default function BookManagementPage() {
     setLoadError(null);
     try {
       // Lấy danh sách tác giả
-      const authorRes = await axios.get<Author[]>(`${API_BASE}/author/`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const authorRes = await api.get<Author[]>(`/author/`, {
+        
       });
       setAuthors(authorRes.data);
 
@@ -76,9 +76,9 @@ export default function BookManagementPage() {
       authorRes.data.forEach(a => authorsMap.set(a.authorId, a.name));
 
       // Lấy danh sách sách
-      const bookRes = await axios.get<BookApi[]>(`${API_BASE}/books/search`, {
+      const bookRes = await api.get<BookApi[]>(`/books/search`, {
         params: query ? { query } : {},
-        headers: { Authorization: `Bearer ${token}` },
+        
       });
 
       // Map authorIds -> authorNames
@@ -118,8 +118,8 @@ export default function BookManagementPage() {
     if (!window.confirm("Bạn có chắc muốn xóa sách này?")) return;
     setErrorMsg(null);
     try {
-      await axios.delete(`${API_BASE}/books/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await api.delete(`/books/${id}`, {
+        
       });
       loadData();
     } catch (err) {
@@ -159,9 +159,9 @@ export default function BookManagementPage() {
       };
 
       if (showModal === "create") {
-        await axios.post(`${API_BASE}/books`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        await api.post(`/books`, payload, { });
       } else if (showModal === "edit" && selectedBook) {
-        await axios.put(`${API_BASE}/books/${selectedBook.bookId}`, payload, { headers: { Authorization: `Bearer ${token}` } });
+        await api.put(`/books/${selectedBook.bookId}`, payload, { });
       }
 
       setShowModal(null);

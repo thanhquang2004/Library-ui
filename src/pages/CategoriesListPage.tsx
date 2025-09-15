@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import axios, { AxiosError } from "axios";
+import  { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
 import SidebarLayout from "../components/Sidebar";
 import { FiPlus, FiEdit2, FiTrash2, FiSave, FiX } from "react-icons/fi";
 
-const API_BASE = import.meta.env.VITE_API_BASE;
+import api from "../api";
 
 interface Category {
   _id: string;
@@ -41,8 +41,8 @@ export default function CategoriesListPage() {
     setLoading(true);
     setErrorMsg(null);
     try {
-      const res = await axios.get<{ data: { categories: Category[] } }>(`${API_BASE}/categories`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await api.get<{ data: { categories: Category[] } }>(`/categories`, {
+        
       });
       setCategories(res.data.data.categories || []);
     } catch (err) {
@@ -51,7 +51,7 @@ export default function CategoriesListPage() {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     if (token) {
@@ -68,14 +68,14 @@ export default function CategoriesListPage() {
     setErrorMsg(null);
     setIsAdding(true);
     try {
-      await axios.post(
-        `${API_BASE}/categories`,
+      await api.post(
+        `/categories`,
         {
           name: newCategory.name.trim(),
           description: newCategory.description.trim(),
           parent: newCategory.parent || null,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
+        {  }
       );
       setNewCategory({ name: "", description: "", parent: "" });
       setShowAddForm(false);
@@ -94,8 +94,8 @@ export default function CategoriesListPage() {
     if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return;
     setErrorMsg(null);
     try {
-      await axios.delete(`${API_BASE}/categories/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await api.delete(`/categories/${id}`, {
+        
       });
       fetchCategories();
     } catch (err) {
@@ -124,8 +124,8 @@ export default function CategoriesListPage() {
     setErrorMsg(null);
     setIsSaving(true);
     try {
-      await axios.put(
-        `${API_BASE}/categories/${id}`,
+      await api.put(
+        `/categories/${id}`,
         {
           name: editValues.name.trim(),
           description: editValues.description.trim(),
