@@ -164,31 +164,12 @@ export default function BookManagementPage() {
       <div className="p-6 space-y-6">
         <header className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Quản lý sách</h1>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-            onClick={() => {
-              setFormData({});
-              setShowModal("create");
-            }}
-          >
-            Thêm sách mới
-          </button>
         </header>
 
         {loadError && <p className="text-red-500">{loadError}</p>}
 
         {/* Table */}
         <div className="overflow-x-auto bg-white rounded shadow">
-          <div className="grid grid-cols-8 bg-gray-100 border-b font-semibold text-gray-700">
-            <div className="p-2">Ảnh</div>
-            <div className="p-2">Tiêu đề</div>
-            <div className="p-2">ISBN</div>
-            <div className="p-2">Thể loại</div>
-            <div className="p-2">NXB</div>
-            <div className="p-2">Ngôn ngữ</div>
-            <div className="p-2">Tác giả</div>
-            <div className="p-2 text-center">Hành động</div>
-          </div>
 
           {loadingBooks ? (
             <p className="p-4 text-gray-500">Đang tải...</p>

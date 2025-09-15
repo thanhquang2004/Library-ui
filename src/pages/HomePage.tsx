@@ -200,12 +200,6 @@ const HomePage: React.FC = () => {
         </div>
 
 
-        {/* {user?.role === "librarian" && (
-          <div className="mt-6">
-            <DashboardPage />
-          </div>
-        )} */}
-
         {canViewChart && (
           <div className="bg-white p-6 rounded-lg border border-gray-200 mt-6">
             <h2 className="text-2xl font-bold text-blue-600 mb-4">
